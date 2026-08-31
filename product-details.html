@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="MarkEn product details." />
+  <title>Product | MarkEn</title>
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/header.css" />
+  <link rel="stylesheet" href="css/hero.css" />
+  <link rel="stylesheet" href="css/product-details.css" />
+  <link rel="stylesheet" href="css/footer.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-utility">
+      <div class="container header-utility__inner">
+        <div class="header-utility__left">
+          <a href="index.html#clients">Global Offices</a>
+          <a href="index.html#contact">Contact Us</a>
+        </div>
+        <div class="header-utility__right">
+          <a href="index.html#contact">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+            Enquiry
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="header-main">
+      <div class="container header-main__inner">
+        <button class="header-burger" aria-label="Open menu" aria-expanded="false">
+          <span></span><span></span>
+        </button>
+        <a href="index.html" class="header-logo" aria-label="MarkEn — Home">
+          <img src="images/logo.svg" alt="MarkEn" />
+        </a>
+        <nav class="header-nav" aria-label="Primary">
+          <div class="nav-item has-mega">
+            <a href="products.html">Products</a>
+            <div class="mega-menu">
+              <div class="mega-menu__grid">
+                <a class="mega-menu__col" href="products.html?category=medical-cold-chain">
+                  <span class="mega-menu__name">Medical Cold Chain</span>
+                  <span class="mega-menu__tagline">Precision cold storage for vaccines, plasma and biological samples</span>
+                </a>
+                <a class="mega-menu__col" href="products.html?category=blood-bank-equipment">
+                  <span class="mega-menu__name">Blood Bank Equipment</span>
+                  <span class="mega-menu__tagline">Instruments engineered for the safe collection and processing of blood</span>
+                </a>
+                <a class="mega-menu__col" href="products.html?category=hospital-furniture">
+                  <span class="mega-menu__name">Hospital Furniture</span>
+                  <span class="mega-menu__tagline">Beds, trolleys and furniture built for critical care environments</span>
+                </a>
+                <a class="mega-menu__col" href="products.html?category=medical-equipment">
+                  <span class="mega-menu__name">Medical Equipment</span>
+                  <span class="mega-menu__tagline">Monitoring, respiratory and life-support systems for every ward</span>
+                </a>
+              </div>
+              <a class="mega-menu__all" href="products.html">View All Products <i>&rarr;</i></a>
+            </div>
+          </div>
+          <a href="index.html#certifications">Certificates</a>
+          <a href="index.html#clients">Clients</a>
+          <a href="index.html#about">About Us</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-menu">
+    <nav class="mobile-menu__nav">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <div class="mobile-menu__categories">
+        <a href="products.html?category=medical-cold-chain">Medical Cold Chain</a>
+        <a href="products.html?category=blood-bank-equipment">Blood Bank Equipment</a>
+        <a href="products.html?category=hospital-furniture">Hospital Furniture</a>
+        <a href="products.html?category=medical-equipment">Medical Equipment</a>
+      </div>
+      <a href="index.html#certifications">Certificates</a>
+      <a href="index.html#clients">Clients</a>
+      <a href="index.html#contact">Contact Us</a>
+    </nav>
+  </div>
+
+  <section class="hero">
+    <img class="hero__video" id="pd-hero-image" src="" alt="" />
+    <div class="hero__scrim"></div>
+    <div class="hero__content container">
+      <span class="eyebrow hero__eyebrow" id="pd-hero-category">Category</span>
+      <h1 class="hero__title" id="pd-hero-name">Product Name</h1>
+    </div>
+    <div class="pd-hero-actions">
+      <a href="#" id="pd-cta-quote" class="btn btn-light">Request a Quote</a>
+      <a href="#pd-documentation" class="btn btn-light">Download Brochure</a>
+      <a href="#" id="pd-cta-enquire" class="btn btn-light">Enquire Now</a>
+      <a href="#" id="pd-cta-whatsapp" target="_blank" rel="noreferrer" class="btn btn-light">WhatsApp</a>
+    </div>
+  </section>
+  <div class="hero-spacer"></div>
+
+  <div class="page-wrap">
+    <main>
+      <nav class="pd-breadcrumb container">
+        <a href="index.html">Home</a> / <a href="products.html">Products</a> /
+        <a href="products.html" id="pd-breadcrumb-category">Category</a> /
+        <span id="pd-breadcrumb-name">Product</span>
+      </nav>
+
+      <section class="container pd-slider">
+        <div class="pd-slider__stage">
+          <button class="pd-slider__arrow pd-slider__arrow--prev" id="pd-slider-prev" aria-label="Previous image">&larr;</button>
+          <button class="pd-slider__arrow pd-slider__arrow--next" id="pd-slider-next" aria-label="Next image">&rarr;</button>
+        </div>
+        <div class="pd-slider__dots" id="pd-slider-dots"></div>
+      </section>
+
+      <section class="pd-applications" id="pd-applications-section">
+        <div class="pd-applications__media">
+          <img id="pd-applications-image" src="" alt="" />
+          <div class="pd-applications__panel">
+            <h2>Applications</h2>
+            <ul class="pd-applications__tags" id="pd-applications-tags"></ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="pd-certifications">
+        <div class="container">
+          <h2 class="reveal">Certifications</h2>
+          <div class="pd-certifications__grid reveal" id="pd-certifications-grid"></div>
+        </div>
+      </section>
+
+      <section class="container pd-why">
+        <h2 class="reveal">Why Choose MarkEn</h2>
+        <div class="pd-why__grid reveal">
+          <div class="pd-why__card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l7 3v6c0 4.5-3 8.2-7 9-4-.8-7-4.5-7-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
+            <h3>WHO &amp; ISO Certified</h3>
+            <p>Every MarkEn system is manufactured under WHO PQS, ISO 9001, ISO 13485 and ISO 14001 certified processes.</p>
+          </div>
+          <div class="pd-why__card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+            <h3>Sales &amp; Manufacturing in India</h3>
+            <p>Backed by our Noida global sales office and our Nashik manufacturing facility.</p>
+          </div>
+          <div class="pd-why__card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 16 0v5a2 2 0 0 1-2 2h-1v-6h3M4 17v-5h3v6H6a2 2 0 0 1-2-2z"/></svg>
+            <h3>Dedicated Enquiry Support</h3>
+            <p>Our team responds to every enquiry with tailored guidance and documentation for your project.</p>
+          </div>
+          <div class="pd-why__card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20.8 8.6c0 4.4-8.8 10.4-8.8 10.4S3.2 13 3.2 8.6a4.6 4.6 0 0 1 8.8-1.8 4.6 4.6 0 0 1 8.8 1.8z"/></svg>
+            <h3>Built for Critical Care</h3>
+            <p>Engineered for the reliability hospitals and blood banks depend on, day after day.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="pd-documentation" id="pd-documentation">
+        <div class="container">
+          <h2 class="reveal">Documentation</h2>
+          <p class="pd-documentation__lead reveal">Request the latest technical documents for this product — our team will email them directly to you.</p>
+          <div class="pd-documentation__grid reveal">
+            <div class="pd-doc-card">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>
+              <h3>Brochure</h3>
+              <p>Product overview and highlights</p>
+              <a href="#" data-doc="Brochure">Request by Email &rarr;</a>
+            </div>
+            <div class="pd-doc-card">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>
+              <h3>Technical Datasheet</h3>
+              <p>Detailed technical parameters</p>
+              <a href="#" data-doc="Technical Datasheet">Request by Email &rarr;</a>
+            </div>
+            <div class="pd-doc-card">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>
+              <h3>User Manual</h3>
+              <p>Installation and operation guide</p>
+              <a href="#" data-doc="User Manual">Request by Email &rarr;</a>
+            </div>
+            <div class="pd-doc-card">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>
+              <h3>Product Catalogue</h3>
+              <p>Complete product range overview</p>
+              <a href="#" data-doc="Product Catalogue">Request by Email &rarr;</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="container pd-faq">
+        <h2 class="reveal">Frequently Asked Questions</h2>
+        <div class="pd-faq__list reveal">
+          <div class="pd-faq__item">
+            <button class="pd-faq__question">How can I request a quotation for this product?<span class="icon">+</span></button>
+            <div class="pd-faq__answer"><p>Use the "Request a Quote" or "Enquire Now" button above, or email info@markenworld.com — our team will respond with pricing and lead times.</p></div>
+          </div>
+          <div class="pd-faq__item">
+            <button class="pd-faq__question">What certifications does MarkEn hold?<span class="icon">+</span></button>
+            <div class="pd-faq__answer"><p>MarkEn's manufacturing is certified to WHO PQS, ISO 9001:2015, ISO 13485:2016, ISO 14001:2015 and WHO GMP standards.</p></div>
+          </div>
+          <div class="pd-faq__item">
+            <button class="pd-faq__question">Where are MarkEn's offices located?<span class="icon">+</span></button>
+            <div class="pd-faq__answer"><p>Our global sales office is at VDS Tower, Sector 2, Noida, UP, with manufacturing at MIDC, Satpur Colony, Nashik, Maharashtra.</p></div>
+          </div>
+          <div class="pd-faq__item">
+            <button class="pd-faq__question">How do I get brochures or technical documents?<span class="icon">+</span></button>
+            <div class="pd-faq__answer"><p>Use the Documentation section above to request a brochure, datasheet, manual or catalogue for this product by email.</p></div>
+          </div>
+          <div class="pd-faq__item">
+            <button class="pd-faq__question">Can I reach MarkEn directly by phone or WhatsApp?<span class="icon">+</span></button>
+            <div class="pd-faq__answer"><p>Yes — call or WhatsApp us at +91 91 3030 5959, or email info@markenworld.com.</p></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+      <div class="site-footer__newsletter">
+        <div class="container site-footer__newsletter-inner">
+          <div>
+            <h3>Stay Updated</h3>
+            <p>Get the latest on new MarkEn systems, certifications and industry news.</p>
+          </div>
+          <form class="newsletter-form">
+            <input type="email" placeholder="Enter your email" required />
+            <button type="submit" aria-label="Subscribe">&rarr;</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="site-footer__social">
+          <a href="https://www.linkedin.com/" target="_blank" rel="noreferrer" aria-label="LinkedIn">in</a>
+          <a href="https://www.facebook.com/" target="_blank" rel="noreferrer" aria-label="Facebook">f</a>
+          <a href="https://www.youtube.com/" target="_blank" rel="noreferrer" aria-label="YouTube">yt</a>
+          <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="Instagram">ig</a>
+        </div>
+      </div>
+
+      <div class="container site-footer__top">
+        <div class="site-footer__col site-footer__brand">
+          <img src="images/logo.svg" alt="MarkEn" style="height: 26px; filter: brightness(0) invert(1);" />
+          <p>MarkEn leads with technology, precision and purpose — transforming lives through internationally trusted medical systems and service.</p>
+        </div>
+        <div class="site-footer__col">
+          <h4>Products</h4>
+          <ul>
+            <li><a href="products.html?category=medical-cold-chain">Medical Cold Chain</a></li>
+            <li><a href="products.html?category=blood-bank-equipment">Blood Bank Equipment</a></li>
+            <li><a href="products.html?category=hospital-furniture">Hospital Furniture</a></li>
+            <li><a href="products.html?category=medical-equipment">Medical Equipment</a></li>
+          </ul>
+        </div>
+        <div class="site-footer__col">
+          <h4>Certifications</h4>
+          <ul>
+            <li>WHO PQS</li>
+            <li>ISO 9001:2015</li>
+            <li>ISO 13485:2016</li>
+            <li>ISO 14001:2015</li>
+            <li>WHO GMP</li>
+          </ul>
+        </div>
+        <div class="site-footer__col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="index.html#certifications">Certificates</a></li>
+            <li><a href="index.html#clients">Clients</a></li>
+            <li><a href="products.html">Gallery</a></li>
+            <li><a href="index.html#contact">Contact Us</a></li>
+          </ul>
+        </div>
+        <div class="site-footer__col">
+          <h4>Get in Touch</h4>
+          <ul class="site-footer__contact">
+            <li><a href="tel:+919130305959">+91 91 3030 5959</a></li>
+            <li><a href="mailto:info@markenworld.com">info@markenworld.com</a></li>
+            <li>Global Sales Office: 05, A-44, VDS Tower, Sector 2, Noida, UP, India</li>
+            <li>Factory: 93/1 &amp; 2, MIDC, Satpur Colony, Nashik, Maharashtra, India</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="container site-footer__bottom">
+        <span>&copy; 2026 MarkEn. All rights reserved.</span>
+        <div class="site-footer__legal">
+          <a href="#privacy">Privacy Policy</a>
+          <a href="#terms">Terms &amp; Conditions</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/product-details.js"></script>
+</body>
+</html>

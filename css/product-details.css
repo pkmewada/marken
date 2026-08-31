@@ -1,0 +1,356 @@
+/* product-details.html — Apple-style product page (test).
+   Reuses the site's pinned .hero component (css/hero.css) for the
+   full-bleed top section; everything below is specific to this page. */
+
+/* Product photography here is isolated studio shots on light backgrounds,
+   not full-bleed environmental footage — stretching it edge-to-edge like
+   the homepage video washes it out and kills header contrast. Contain it
+   on the brand navy instead, letterboxed, like a hardware reveal shot. */
+#pd-hero-image {
+  object-fit: contain;
+  padding: clamp(2rem, 8vw, 7rem) clamp(1.5rem, 10vw, 10rem) clamp(6rem, 14vw, 11rem);
+}
+
+/* ---------- Hero action row (over the media, bottom-right) ---------- */
+.pd-hero-actions {
+  position: absolute;
+  right: 0;
+  bottom: 3.5rem;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  width: var(--container);
+  margin-inline: auto;
+  left: 0;
+  animation: hero-up 1.1s var(--ease) 0.5s both;
+}
+.pd-hero-actions .btn {
+  padding: 0.9em 1.6em;
+}
+.pd-hero-actions .btn-light:hover {
+  color: var(--navy);
+}
+
+/* ---------- Breadcrumb ---------- */
+.pd-breadcrumb {
+  padding-top: 2.5rem;
+  padding-bottom: 2rem;
+  font-size: 0.78rem;
+  color: var(--body);
+}
+.pd-breadcrumb a:hover {
+  color: var(--navy);
+}
+.pd-breadcrumb span {
+  color: var(--ink);
+}
+
+/* ---------- Media slider ---------- */
+.pd-slider {
+  padding-bottom: 5rem;
+}
+.pd-slider__stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.pd-slider__img,
+.pd-slider__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 2rem;
+  opacity: 0;
+  transition: opacity 0.5s var(--ease);
+}
+.pd-slider__img.is-active,
+.pd-slider__video.is-active {
+  opacity: 1;
+}
+.pd-slider__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: border-color 0.3s var(--ease), color 0.3s var(--ease);
+}
+.pd-slider__arrow:hover {
+  border-color: var(--navy);
+  color: var(--navy);
+}
+.pd-slider__arrow--prev {
+  left: 1.25rem;
+}
+.pd-slider__arrow--next {
+  right: 1.25rem;
+}
+.pd-slider__dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+.pd-slider__dots button {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: var(--border);
+  cursor: pointer;
+  padding: 0;
+}
+.pd-slider__dots button.is-active {
+  background: var(--navy);
+}
+
+/* ---------- Applications (visual) ---------- */
+.pd-applications {
+  padding-bottom: 5rem;
+}
+.pd-applications__media {
+  position: relative;
+  aspect-ratio: 21 / 9;
+  min-height: 320px;
+  overflow: hidden;
+}
+.pd-applications__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pd-applications__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 10, 40, 0.15) 0%, rgba(0, 10, 40, 0.75) 100%);
+}
+.pd-applications__panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  padding: 2.5rem var(--container-pad, 0);
+  width: var(--container);
+  margin-inline: auto;
+  color: #fff;
+}
+.pd-applications__panel h2 {
+  color: #fff;
+  font-size: clamp(1.5rem, 2.4vw, 1.9rem);
+  margin-bottom: 1rem;
+}
+.pd-applications__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.pd-applications__tags li {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 0.6em 1.3em;
+  font-size: 0.82rem;
+}
+
+/* ---------- Certifications ---------- */
+.pd-certifications {
+  border-top: 1px solid var(--border);
+  padding: 5rem 0;
+  background: var(--bg-soft);
+}
+.pd-certifications h2,
+.pd-why h2,
+.pd-documentation h2,
+.pd-faq h2 {
+  font-size: clamp(1.5rem, 2.4vw, 1.9rem);
+  margin-bottom: 2rem;
+}
+.pd-certifications__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.pd-cert-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 0.85em 1.5em;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.pd-cert-badge svg {
+  width: 16px;
+  height: 16px;
+  color: var(--navy);
+}
+
+/* ---------- Why choose ---------- */
+.pd-why {
+  padding: 5rem 0;
+}
+.pd-why__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.75rem;
+}
+.pd-why__card {
+  border: 1px solid var(--border);
+  padding: 2rem 1.5rem;
+}
+.pd-why__card svg {
+  width: 26px;
+  height: 26px;
+  color: var(--navy);
+  margin-bottom: 1rem;
+}
+.pd-why__card h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+.pd-why__card p {
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+/* ---------- Documentation ---------- */
+.pd-documentation {
+  border-top: 1px solid var(--border);
+  background: var(--bg-soft);
+  padding: 5rem 0;
+}
+.pd-documentation__lead {
+  max-width: 56ch;
+  line-height: 1.8;
+  margin-bottom: 2.5rem;
+}
+.pd-documentation__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+.pd-doc-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 1.75rem 1.5rem;
+  text-align: center;
+  transition: border-color 0.3s var(--ease), transform 0.3s var(--ease);
+}
+.pd-doc-card:hover {
+  border-color: var(--navy);
+  transform: translateY(-3px);
+}
+.pd-doc-card svg {
+  width: 28px;
+  height: 28px;
+  color: var(--navy);
+  margin-bottom: 0.75rem;
+}
+.pd-doc-card h3 {
+  font-size: 0.92rem;
+  margin-bottom: 0.3rem;
+}
+.pd-doc-card p {
+  font-size: 0.76rem;
+  color: var(--body);
+  margin-bottom: 1rem;
+}
+.pd-doc-card a {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--navy);
+}
+.pd-doc-card a:hover {
+  color: var(--blue);
+}
+
+/* ---------- FAQ ---------- */
+.pd-faq {
+  padding: 5rem 0 7rem;
+}
+.pd-faq__list {
+  max-width: 760px;
+}
+.pd-faq__item {
+  border-bottom: 1px solid var(--border);
+}
+.pd-faq__question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.4em 0;
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+.pd-faq__question span.icon {
+  flex: none;
+  font-size: 1.2rem;
+  color: var(--navy);
+  transition: transform 0.3s var(--ease);
+}
+.pd-faq__item.is-open .pd-faq__question span.icon {
+  transform: rotate(45deg);
+}
+.pd-faq__answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s var(--ease);
+}
+.pd-faq__answer p {
+  padding-bottom: 1.4em;
+  line-height: 1.8;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 1024px) {
+  .pd-why__grid,
+  .pd-documentation__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  .pd-hero-actions {
+    bottom: 1.5rem;
+    justify-content: center;
+  }
+  .pd-hero-actions .btn {
+    flex: 1 1 calc(50% - 0.75rem);
+    justify-content: center;
+    padding: 0.85em 1em;
+  }
+}
+@media (max-width: 560px) {
+  .pd-why__grid,
+  .pd-documentation__grid {
+    grid-template-columns: 1fr;
+  }
+  .pd-slider__arrow {
+    width: 36px;
+    height: 36px;
+  }
+}

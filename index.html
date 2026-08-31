@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="MarkEn — precision-engineered medical cold chain, blood bank, hospital furniture and critical care technology, trusted by 20,000+ healthcare institutions worldwide."
+  />
+  <title>MarkEn | Precision Medical Technology</title>
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/header.css" />
+  <link rel="stylesheet" href="css/hero.css" />
+  <link rel="stylesheet" href="css/home.css" />
+  <link rel="stylesheet" href="css/footer.css" />
+  <style>
+    /* vertical slider – placed after Our Story section */
+    .vertical-slider-section {
+      position: relative;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+      background: #0b1219;
+      overscroll-behavior: auto;
+    }
+    
+    /* Animated gradient overlay */
+    .vertical-slider-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background: 
+        linear-gradient(180deg, 
+          rgba(11, 18, 25, 0.4) 0%,
+          transparent 30%,
+          transparent 70%,
+          rgba(11, 18, 25, 0.6) 100%
+        );
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .vertical-slider-section:hover::before {
+      opacity: 1;
+    }
+    
+    /* Slide content wrapper with zoom effect */
+    .vertical-slider-track .vs-slide {
+      flex: 0 0 100vh;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .vertical-slider-track .vs-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform: scale(1.05);
+    }
+    
+    /* Active slide gets zoomed in */
+    .vertical-slider-track .vs-slide.active img {
+      transform: scale(1);
+    }
+    
+    /* Slide overlay with text that appears on hover */
+    .vs-slide-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      opacity: 0;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      transform: translateY(20px);
+      background: rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+    }
+    .vertical-slider-section:hover .vs-slide-overlay {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .vs-slide-overlay .slide-number {
+      color: rgba(255,255,255,0.3);
+      font-size: 6rem;
+      font-weight: 700;
+      font-family: var(--font-heading, sans-serif);
+      letter-spacing: 0.05em;
+      line-height: 1;
+      text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+    }
+    .vs-slide-overlay .slide-title {
+      color: #fff;
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.6);
+      letter-spacing: 0.1em;
+    }
+    
+    /* dot pagination – right center with glow */
+    .vs-dots {
+      position: absolute;
+      right: 2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .vs-dots .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      border: 2px solid rgba(255,255,255,0.15);
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: auto;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(0,0,0,0.3);
+      position: relative;
+    }
+    .vs-dots .dot::before {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .vs-dots .dot:hover {
+      background: rgba(255,255,255,0.5);
+      transform: scale(1.15);
+    }
+    .vs-dots .dot.active {
+      background: #ffffff;
+      transform: scale(1.3);
+      border-color: #ffffff;
+      box-shadow: 0 0 20px rgba(255,255,255,0.3), 0 0 60px rgba(255,255,255,0.1);
+    }
+    .vs-dots .dot.active::before {
+      border-color: rgba(255,255,255,0.2);
+      animation: pulse-ring 2s ease-in-out infinite;
+    }
+    @keyframes pulse-ring {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.3; }
+    }
+    
+    /* Progress bar at bottom */
+    .vs-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: rgba(255,255,255,0.15);
+      z-index: 10;
+      width: 100%;
+    }
+    .vs-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #ffffff, rgba(255,255,255,0.5));
+      width: 0%;
+      transition: width 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      box-shadow: 0 0 20px rgba(255,255,255,0.2);
+    }
+    
+    /* slide counter */
+    .vs-counter {
+      position: absolute;
+      bottom: 2.5rem;
+      right: 2rem;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.85rem;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      z-index: 10;
+      font-family: var(--font-body, sans-serif);
+      transition: color 0.4s ease;
+    }
+    .vertical-slider-section:hover .vs-counter {
+      color: rgba(255,255,255,0.8);
+    }
+    
+    /* scroll indicators with improved styling */
+    .vs-scroll-indicator {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.3);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      z-index: 10;
+      font-family: var(--font-body, sans-serif);
+      opacity: 0;
+      transition: opacity 0.8s ease, transform 0.6s ease;
+      pointer-events: none;
+      text-align: center;
+    }
+    .vs-scroll-indicator.top {
+      top: 2rem;
+      transform: translateX(-50%) translateY(-10px);
+    }
+    .vs-scroll-indicator.bottom {
+      bottom: 2rem;
+      transform: translateX(-50%) translateY(10px);
+    }
+    .vs-scroll-indicator.visible {
+      opacity: 0.6;
+      transform: translateX(-50%) translateY(0);
+    }
+    .vs-scroll-indicator:hover {
+      opacity: 1;
+    }
+    .vs-scroll-indicator svg {
+      display: block;
+      margin: 0 auto 0.5rem;
+      width: 18px;
+      height: 18px;
+      animation: bounce-down 2.5s ease-in-out infinite;
+      stroke: rgba(255,255,255,0.5);
+    }
+    .vs-scroll-indicator.top svg {
+      animation-name: bounce-up;
+    }
+    @keyframes bounce-down {
+      0%, 100% { transform: translateY(0); opacity: 1; }
+      50% { transform: translateY(10px); opacity: 0.3; }
+    }
+    @keyframes bounce-up {
+      0%, 100% { transform: translateY(0); opacity: 1; }
+      50% { transform: translateY(-10px); opacity: 0.3; }
+    }
+    
+    /* Slide transition glow effect */
+    .vertical-slider-track {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+      transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      will-change: transform;
+    }
+    
+    /* Subtle vignette on images */
+    .vertical-slider-track .vs-slide::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.3) 100%);
+      opacity: 0.5;
+      transition: opacity 0.8s ease;
+    }
+    .vertical-slider-section:hover .vs-slide::after {
+      opacity: 0.7;
+    }
+    
+    /* CRITICAL: Keep scrollbar always visible */
+    html {
+      overflow-y: scroll;
+    }
+    
+    /* small screens */
+    @media (max-width: 768px) {
+      .vs-dots {
+        right: 1rem;
+        gap: 0.75rem;
+      }
+      .vs-dots .dot {
+        width: 12px;
+        height: 12px;
+      }
+      .vs-counter {
+        bottom: 1.5rem;
+        right: 1rem;
+        font-size: 0.7rem;
+      }
+      .vs-scroll-indicator {
+        display: none;
+      }
+      .vs-slide-overlay .slide-number {
+        font-size: 3rem;
+      }
+      .vs-slide-overlay .slide-title {
+        font-size: 1rem;
+      }
+      .vertical-slider-section::before {
+        opacity: 1;
+      }
+      .vs-progress {
+        height: 2px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-utility">
+      <div class="container header-utility__inner">
+        <div class="header-utility__left">
+          <a href="index.html#clients">Global Offices</a>
+          <a href="index.html#contact">Contact Us</a>
+        </div>
+        <div class="header-utility__right">
+          <a href="index.html#contact">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+            Enquiry
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="header-main">
+      <div class="container header-main__inner">
+        <button class="header-burger" aria-label="Open menu" aria-expanded="false">
+          <span></span><span></span>
+        </button>
+        <a href="index.html" class="header-logo" aria-label="MarkEn — Home">
+          <img src="images/logo.svg" alt="MarkEn" />
+        </a>
+        <nav class="header-nav" aria-label="Primary">
+          <div class="nav-item has-mega">
+            <a href="products.html">Products</a>
+            <div class="mega-menu">
+              <div class="mega-menu__grid">
+                <a class="mega-menu__col" href="products.html?category=medical-cold-chain">
+                  <span class="mega-menu__name">Medical Cold Chain</span>
+                  <span class="mega-menu__tagline">Precision cold storage for vaccines, plasma and biological samples</span>
+                </a>
+                <a class="mega-menu__col" href="products.html?category=blood-bank-equipment">
+                  <span class="mega-menu__name">Blood Bank Equipment</span>
+                  <span class="mega-menu__tagline">Instruments engineered for the safe collection and processing of blood</span>
+                </a>
+                <a class="mega-menu__col" href="products.html?category=hospital-furniture">
+                  <span class="mega-menu__name">Hospital Furniture</span>
+                  <span class="mega-menu__tagline">Beds, trolleys and furniture built for critical care environments</span>
+                </a>
+                <a class="mega-menu__col" href="products.html?category=medical-equipment">
+                  <span class="mega-menu__name">Medical Equipment</span>
+                  <span class="mega-menu__tagline">Monitoring, respiratory and life-support systems for every ward</span>
+                </a>
+              </div>
+              <a class="mega-menu__all" href="products.html">View All Products <i>&rarr;</i></a>
+            </div>
+          </div>
+          <a href="index.html#certifications">Certificates</a>
+          <a href="index.html#clients">Clients</a>
+          <a href="index.html#about">About Us</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-menu">
+    <nav class="mobile-menu__nav">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <div class="mobile-menu__categories">
+        <a href="products.html?category=medical-cold-chain">Medical Cold Chain</a>
+        <a href="products.html?category=blood-bank-equipment">Blood Bank Equipment</a>
+        <a href="products.html?category=hospital-furniture">Hospital Furniture</a>
+        <a href="products.html?category=medical-equipment">Medical Equipment</a>
+      </div>
+      <a href="index.html#certifications">Certificates</a>
+      <a href="index.html#clients">Clients</a>
+      <a href="index.html#contact">Contact Us</a>
+    </nav>
+  </div>
+
+  <section class="hero">
+    <video class="hero__video" autoplay muted loop playsinline poster="images/hero-poster.jpg">
+      <source src="videos/hero.mp4" type="video/mp4" />
+    </video>
+    <div class="hero__scrim"></div>
+    <div class="hero__content container">
+      <span class="eyebrow hero__eyebrow">MarkEn — Medical Technology</span>
+      <h1 class="hero__title">Precision Engineered.<br />Trusted Worldwide.</h1>
+      <a href="products.html" class="btn btn-light hero__cta">Discover Products</a>
+    </div>
+  </section>
+  <div class="hero-spacer"></div>
+
+  <div class="page-wrap">
+    <main>
+
+      <!-- Editorial collage: our story -->
+      <section class="section collage">
+        <div class="container collage__grid">
+          <div class="collage__images reveal">
+            <img src="images/products/ult-deep-freezer-86.webp" alt="MarkEn ULT Deep Freezer" />
+            <img src="images/banners/who-pqs-banner.webp" alt="MarkEn WHO PQS accredited system" />
+            <img src="images/products/icu-7-function-bed.webp" alt="MarkEn ICU motorized bed" />
+          </div>
+          <div class="collage__copy reveal">
+            <span class="eyebrow" data-field="eyebrow">Our Story</span>
+            <h2 data-field="title">25 Years of Precision Engineering</h2>
+            <p data-field="text">
+              From a single manufacturing unit in Nashik to a nationwide network, MarkEn has spent
+              25 years engineering cold chain, blood bank and critical care systems trusted by more
+              than 20,000 healthcare institutions worldwide.
+            </p>
+            <div class="collage__nav">
+              <button type="button" data-dir="prev" aria-label="Previous story">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="15 18 9 12 15 6" /></svg>
+              </button>
+              <button type="button" data-dir="next" aria-label="Next story">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="9 18 15 12 9 6" /></svg>
+              </button>
+              <span data-field="counter">01 / 03</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <script type="application/json" id="collage-slides">
+        [
+          {
+            "eyebrow": "Our Story",
+            "title": "25 Years of Precision Engineering",
+            "text": "From a single manufacturing unit in Nashik to a nationwide network, MarkEn has spent 25 years engineering cold chain, blood bank and critical care systems trusted by more than 20,000 healthcare institutions worldwide."
+          },
+          {
+            "eyebrow": "Our Reach",
+            "title": "30+ Franchise Locations Nationwide",
+            "text": "With 500+ service centers across India, MarkEn ensures rapid support and maintenance for every system we manufacture — backed by our Nashik factory and Noida sales office."
+          },
+          {
+            "eyebrow": "Our Standards",
+            "title": "The Only Indian Brand With 11+ WHO PQS Products",
+            "text": "MarkEn holds ISO 9001:2015, ISO 13485:2016, ISO 14001:2015 and WHO GMP certification — engineering trust into every device we build."
+          }
+        ]
+      </script>
+
+      <!-- VERTICAL SLIDER SECTION (after Our Story) -->
+      <section class="vertical-slider-section" id="verticalSlider">
+        <div class="vertical-slider-track" id="vsTrack">
+          <div class="vs-slide active">
+            <img src="https://images.unsplash.com/photo-1581093588401-fbb62a02f120?w=1200&h=800&fit=crop" alt="Medical Equipment" />
+            <div class="vs-slide-overlay">
+              <span class="slide-number">01</span>
+              <span class="slide-title">Medical Equipment</span>
+            </div>
+          </div>
+          <div class="vs-slide">
+            <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=1200&h=800&fit=crop" alt="Blood Bank" />
+            <div class="vs-slide-overlay">
+              <span class="slide-number">02</span>
+              <span class="slide-title">Blood Bank</span>
+            </div>
+          </div>
+          <div class="vs-slide">
+            <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=1200&h=800&fit=crop" alt="Hospital Furniture" />
+            <div class="vs-slide-overlay">
+              <span class="slide-number">03</span>
+              <span class="slide-title">Hospital Furniture</span>
+            </div>
+          </div>
+          <div class="vs-slide">
+            <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&h=800&fit=crop" alt="Medical Technology" />
+            <div class="vs-slide-overlay">
+              <span class="slide-number">04</span>
+              <span class="slide-title">Medical Technology</span>
+            </div>
+          </div>
+        </div>
+        <!-- Progress bar -->
+        <div class="vs-progress">
+          <div class="vs-progress-bar" id="vsProgress"></div>
+        </div>
+        <!-- dot pagination right center -->
+        <div class="vs-dots" id="vsDots"></div>
+        <!-- slide counter -->
+        <div class="vs-counter" id="vsCounter">01 / 04</div>
+        <!-- scroll indicators -->
+        <div class="vs-scroll-indicator top" id="scrollTop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="18 15 12 9 6 15" /></svg>
+          Scroll up
+        </div>
+        <div class="vs-scroll-indicator bottom" id="scrollBottom">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="6 9 12 15 18 9" /></svg>
+          Scroll down
+        </div>
+      </section>
+
+      <!-- Featured collection -->
+      <section class="section featured container">
+        <span class="eyebrow reveal">Featured Collection</span>
+        <h2 class="reveal">Medical Cold Chain</h2>
+        <p class="reveal">
+          Ultra-low temperature freezers, refrigerators and cold boxes engineered for uninterrupted
+          vaccine and biologic integrity — from –86°C laboratory storage to solar-powered field deployment.
+        </p>
+        <a href="products.html?category=medical-cold-chain" class="btn btn-dark reveal">Discover the Collection</a>
+
+        <div class="featured__grid">
+          <div class="featured__large reveal">
+            <img src="images/products/ult-deep-freezer-86.webp" alt="ULT Deep Freezer -86C" />
+          </div>
+          <div class="featured__side">
+            <div class="featured__detail reveal">
+              <img src="images/products/ice-lined-refrigerator.webp" alt="Ice Lined Refrigerator" />
+            </div>
+            <div class="product-card-mini reveal">
+              <div class="product-card-mini__thumb">
+                <img src="images/products/passive-cold-box.webp" alt="Passive Cold Box" />
+              </div>
+              <div class="product-card-mini__info">
+                <span>Medical Cold Chain</span>
+                <h4>Passive Cold Box</h4>
+                <a href="product-details.html?slug=passive-cold-box">Details</a>
+              </div>
+              <span class="product-card-mini__page">1 / 6</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Split banner: Blood Bank Equipment -->
+      <section class="split">
+        <div class="split__copy reveal">
+          <span class="eyebrow">Blood Bank Equipment</span>
+          <h2>Refrigerated Centrifuge</h2>
+          <p>
+            Our Refrigerated Centrifuge is designed for precise separation of temperature-sensitive
+            samples in clinical, biomedical, pharmaceutical, and research laboratories — ideal for
+            blood banks, pathology labs, molecular biology, and biotech applications.
+          </p>
+          <a href="product-details.html?slug=refrigerated-centrifuge" class="btn btn-dark">View Product</a>
+        </div>
+        <div class="split__media reveal">
+          <img src="images/products/refrigerated-centrifuge.webp" alt="Refrigerated Centrifuge" />
+        </div>
+      </section>
+
+      <!-- Editorial CTA + image grid: Hospital Furniture -->
+      <section class="section editorial-cta container">
+        <span class="eyebrow reveal">Hospital Furniture</span>
+        <h2 class="reveal">Built for Critical Care</h2>
+        <p class="reveal">
+          Beds, trolleys and furniture engineered for durability, hygiene and patient comfort —
+          trusted by 20,000+ healthcare institutions.
+        </p>
+        <a href="products.html?category=hospital-furniture" class="btn btn-dark reveal">Shop the Collection</a>
+        <div class="editorial-cta__grid">
+          <img class="reveal" src="images/products/icu-7-function-bed.webp" alt="ICU 7 Function Motorized Bed" />
+          <img class="reveal" src="images/products/examination-couch.webp" alt="Examination Couch" />
+        </div>
+      </section>
+
+      <!-- Stats -->
+      <section class="stats">
+        <div class="container stats__grid">
+          <div class="reveal"><span class="stats__value">25+</span><span class="stats__label">Years in Business</span></div>
+          <div class="reveal"><span class="stats__value">400+</span><span class="stats__label">Product Range</span></div>
+          <div class="reveal"><span class="stats__value">20,000+</span><span class="stats__label">Healthcare Customers</span></div>
+          <div class="reveal"><span class="stats__value">11+</span><span class="stats__label">WHO PQS Accredited Products</span></div>
+        </div>
+      </section>
+
+      <!-- Certified & trusted stories -->
+      <section class="section container">
+        <div class="stories__head">
+          <h2 class="reveal">Certified &amp; Trusted</h2>
+          <a href="index.html#certifications" class="reveal">View All Certificates <i>&rarr;</i></a>
+        </div>
+        <div class="stories__grid">
+          <a class="story-card reveal" href="index.html#certifications">
+            <div class="story-card__media"><img src="images/banners/who-pqs-banner.webp" alt="WHO PQS accreditation" /></div>
+            <span class="story-card__eyebrow">Certification</span>
+            <h3>11+ products WHO PQS accredited — the only brand in India</h3>
+          </a>
+          <a class="story-card reveal" href="index.html#certifications">
+            <div class="story-card__media"><img src="images/products/ventilator.webp" alt="ISO certified manufacturing" /></div>
+            <span class="story-card__eyebrow">Quality</span>
+            <h3>ISO 9001, 13485 &amp; 14001 certified manufacturing</h3>
+          </a>
+          <a class="story-card reveal" href="index.html#clients">
+            <div class="story-card__media"><img src="images/banners/hospital-furniture-range.webp" alt="MarkEn nationwide reach" /></div>
+            <span class="story-card__eyebrow">Reach</span>
+            <h3>30+ franchise locations, 500+ service centers across India</h3>
+          </a>
+          <a class="story-card reveal" href="products.html">
+            <div class="story-card__media"><img src="images/products/icu-7-function-bed.webp" alt="MarkEn trusted customers" /></div>
+            <span class="story-card__eyebrow">Trust</span>
+            <h3>20,000+ happy customers across global healthcare institutions</h3>
+          </a>
+        </div>
+      </section>
+
+      <!-- Final CTA -->
+      <section class="final-cta">
+        <div class="container final-cta__content reveal">
+          <span class="eyebrow">Get in Touch</span>
+          <h2>Let's Build Your Facility's Future</h2>
+          <p>Speak with our team about outfitting your hospital, lab or blood bank with WHO PQS accredited MarkEn systems.</p>
+          <a href="mailto:info@markenworld.com" class="btn btn-light">Make an Enquiry</a>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="site-footer" id="contact">
+      <div class="site-footer__newsletter">
+        <div class="container site-footer__newsletter-inner">
+          <div>
+            <h3>Stay Updated</h3>
+            <p>Get the latest on new MarkEn systems, certifications and industry news.</p>
+          </div>
+          <form class="newsletter-form">
+            <input type="email" placeholder="Enter your email" required />
+            <button type="submit" aria-label="Subscribe">&rarr;</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="site-footer__social">
+          <a href="https://www.linkedin.com/" target="_blank" rel="noreferrer" aria-label="LinkedIn">in</a>
+          <a href="https://www.facebook.com/" target="_blank" rel="noreferrer" aria-label="Facebook">f</a>
+          <a href="https://www.youtube.com/" target="_blank" rel="noreferrer" aria-label="YouTube">yt</a>
+          <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="Instagram">ig</a>
+        </div>
+      </div>
+
+      <div class="container site-footer__top">
+        <div class="site-footer__col site-footer__brand">
+          <img src="images/logo.svg" alt="MarkEn" style="height: 26px; filter: brightness(0) invert(1);" />
+          <p>MarkEn leads with technology, precision and purpose — transforming lives through internationally trusted medical systems and service.</p>
+        </div>
+        <div class="site-footer__col">
+          <h4>Products</h4>
+          <ul>
+            <li><a href="products.html?category=medical-cold-chain">Medical Cold Chain</a></li>
+            <li><a href="products.html?category=blood-bank-equipment">Blood Bank Equipment</a></li>
+            <li><a href="products.html?category=hospital-furniture">Hospital Furniture</a></li>
+            <li><a href="products.html?category=medical-equipment">Medical Equipment</a></li>
+          </ul>
+        </div>
+        <div class="site-footer__col" id="certifications">
+          <h4>Certifications</h4>
+          <ul>
+            <li>WHO PQS</li>
+            <li>ISO 9001:2015</li>
+            <li>ISO 13485:2016</li>
+            <li>ISO 14001:2015</li>
+            <li>WHO GMP</li>
+          </ul>
+        </div>
+        <div class="site-footer__col" id="about">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="index.html#certifications">Certificates</a></li>
+            <li><a href="index.html#clients">Clients</a></li>
+            <li><a href="products.html">Gallery</a></li>
+            <li><a href="index.html#contact">Contact Us</a></li>
+          </ul>
+        </div>
+        <div class="site-footer__col" id="clients">
+          <h4>Get in Touch</h4>
+          <ul class="site-footer__contact">
+            <li><a href="tel:+919130305959">+91 91 3030 5959</a></li>
+            <li><a href="mailto:info@markenworld.com">info@markenworld.com</a></li>
+            <li>Global Sales Office: 05, A-44, VDS Tower, Sector 2, Noida, UP, India</li>
+            <li>Factory: 93/1 &amp; 2, MIDC, Satpur Colony, Nashik, Maharashtra, India</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="container site-footer__bottom">
+        <span>&copy; 2026 MarkEn. All rights reserved.</span>
+        <div class="site-footer__legal">
+          <a href="#privacy">Privacy Policy</a>
+          <a href="#terms">Terms &amp; Conditions</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function(){
+      const slider = document.getElementById("verticalSlider");
+      const track = document.getElementById("vsTrack");
+      const dotsBox = document.getElementById("vsDots");
+      const counter = document.getElementById("vsCounter");
+      const topIndicator = document.getElementById("scrollTop");
+      const bottomIndicator = document.getElementById("scrollBottom");
+      const progressBar = document.getElementById("vsProgress");
+
+      if(!slider || !track) return;
+
+      const slides = track.querySelectorAll(".vs-slide");
+      const total = slides.length;
+      let current = 0;
+      let animating = false;
+      let wheelDelta = 0;
+      let wheelTimer = null;
+      const threshold = 45;
+
+      // CREATE DOTS
+      for(let i=0; i<total; i++){
+        let dot = document.createElement("span");
+        dot.className = "dot";
+        if(i===0) dot.classList.add("active");
+        dot.onclick = function(){
+          if(!animating) goToSlide(i);
+        };
+        dotsBox.appendChild(dot);
+      }
+
+      function updateUI(){
+        // Update dots
+        document.querySelectorAll("#vsDots .dot").forEach((dot,i)=>{
+          dot.classList.toggle("active", i===current);
+        });
+        
+        // Update counter
+        counter.innerHTML = String(current+1).padStart(2,"0") + " / " + String(total).padStart(2,"0");
+        
+        // Update scroll indicators
+        if(topIndicator){
+          topIndicator.classList.toggle("visible", current>0);
+        }
+        if(bottomIndicator){
+          bottomIndicator.classList.toggle("visible", current<total-1);
+        }
+        
+        // Update progress bar
+        if(progressBar){
+          const progress = ((current + 1) / total) * 100;
+          progressBar.style.width = progress + '%';
+        }
+        
+        // Update active class on slides for zoom effect
+        slides.forEach((slide, i) => {
+          slide.classList.toggle('active', i === current);
+        });
+      }
+
+      function goToSlide(index){
+        if(animating) return;
+        current = index;
+        animating = true;
+        track.style.transform = `translateY(-${current * 100}vh)`;
+        updateUI();
+        setTimeout(()=>{
+          animating = false;
+        }, 800);
+      }
+
+      // Desktop Wheel
+      slider.addEventListener("wheel", function(e){
+        let direction = e.deltaY;
+        
+        // Check if slider is in viewport
+        let rect = slider.getBoundingClientRect();
+        let isInViewport = rect.top < window.innerHeight && rect.bottom > 0;
+        
+        if(!isInViewport) return;
+
+        // AT BOUNDARIES: pass scroll to page
+        if((current === 0 && direction < 0) || (current === total - 1 && direction > 0)){
+          window.scrollBy({
+            top: direction,
+            behavior: "auto"
+          });
+          return;
+        }
+
+        e.preventDefault();
+
+        wheelDelta += direction;
+        clearTimeout(wheelTimer);
+        wheelTimer = setTimeout(()=>{
+          wheelDelta = 0;
+        }, 150);
+
+        if(Math.abs(wheelDelta) >= threshold && !animating){
+          if(wheelDelta > 0 && current < total - 1){
+            goToSlide(current + 1);
+          } else if(wheelDelta < 0 && current > 0){
+            goToSlide(current - 1);
+          }
+          wheelDelta = 0;
+        }
+      }, { passive: false });
+
+      // TOUCH SUPPORT
+      let touchStart = 0;
+      slider.addEventListener("touchstart", function(e){
+        touchStart = e.touches[0].clientY;
+      }, { passive: true });
+
+      slider.addEventListener("touchend", function(e){
+        let end = e.changedTouches[0].clientY;
+        let diff = touchStart - end;
+        if(Math.abs(diff) < 50) return;
+        if(diff > 0 && current < total - 1){
+          goToSlide(current + 1);
+        }
+        if(diff < 0 && current > 0){
+          goToSlide(current - 1);
+        }
+      }, { passive: true });
+
+      // KEYBOARD
+      document.addEventListener("keydown", function(e){
+        let rect = slider.getBoundingClientRect();
+        let isInViewport = rect.top < window.innerHeight && rect.bottom > 0;
+        if(!isInViewport) return;
+        if(e.key === "ArrowDown" || e.key === "ArrowRight"){
+          e.preventDefault();
+          if(current < total - 1) goToSlide(current + 1);
+        }
+        if(e.key === "ArrowUp" || e.key === "ArrowLeft"){
+          e.preventDefault();
+          if(current > 0) goToSlide(current - 1);
+        }
+      });
+
+      // INITIAL
+      track.style.transform = "translateY(0)";
+      updateUI();
+
+    })();
+  </script>
+  <script src="js/main.js"></script>
+</body>
+</html>
