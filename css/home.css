@@ -308,6 +308,163 @@
   line-height: 1.4;
 }
 
+/* ---- Certifications ---- */
+.certs {
+  text-align: center;
+}
+.certs__grid {
+  margin-top: 3.5rem;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.25rem;
+}
+.cert-card {
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.3s var(--ease);
+}
+.cert-card:hover {
+  border-color: var(--navy);
+}
+.cert-card__head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.cert-card__head svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  color: var(--navy);
+}
+.cert-card__name {
+  flex: 1;
+  font-family: var(--font-heading);
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+.cert-card__head .icon {
+  flex: none;
+  font-size: 1.2rem;
+  color: var(--navy);
+  transition: transform 0.3s var(--ease);
+}
+.cert-card.is-open .cert-card__head .icon {
+  transform: rotate(45deg);
+}
+.cert-card__desc {
+  display: block;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s var(--ease);
+}
+.cert-card__desc span {
+  display: block;
+  padding-top: 1rem;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--body);
+}
+
+/* ---- Contact Us ---- */
+.contact-us {
+  text-align: center;
+}
+.contact-us__grid {
+  margin-top: 3.5rem;
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 4.5rem;
+  text-align: left;
+}
+
+.contact-us__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+}
+.contact-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1rem;
+}
+.contact-detail svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  margin-top: 0.2rem;
+  color: var(--navy);
+}
+.contact-detail__label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 0.4rem;
+}
+.contact-detail__value {
+  display: block;
+  font-size: 0.98rem;
+  color: var(--ink);
+  line-height: 1.6;
+}
+a.contact-detail__value:hover {
+  color: var(--navy);
+}
+
+.contact-us__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.contact-us__form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+.contact-us__form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--body);
+}
+.contact-us__form input,
+.contact-us__form textarea {
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  padding: 0.85em 1em;
+  font-size: 0.9rem;
+  font-weight: 400;
+  font-family: var(--font-body);
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--ink);
+  resize: vertical;
+}
+.contact-us__form input::placeholder,
+.contact-us__form textarea::placeholder {
+  color: #9aa0ac;
+}
+.contact-us__form input:focus,
+.contact-us__form textarea:focus {
+  outline: none;
+  border-color: var(--navy);
+}
+.contact-us__form button {
+  align-self: flex-start;
+}
+
 /* ---- Stats band ---- */
 .stats {
   background: var(--gradient);
@@ -340,29 +497,6 @@
   color: rgba(255, 255, 255, 0.75);
 }
 
-/* ---- Final CTA ---- */
-.final-cta {
-  background:
-    radial-gradient(ellipse at 30% 20%, rgba(32, 143, 206, 0.35) 0%, transparent 55%),
-    var(--navy);
-  padding: 6rem 0;
-  text-align: center;
-}
-.final-cta__content {
-  max-width: 60ch;
-  margin-inline: auto;
-}
-.final-cta h2 {
-  color: #fff;
-  margin: 0.75rem 0 1.5rem;
-  font-size: clamp(1.9rem, 3.6vw, 2.75rem);
-}
-.final-cta p {
-  color: rgba(255, 255, 255, 0.82);
-  line-height: 1.75;
-  margin-bottom: 2.5rem;
-}
-
 @media (max-width: 1024px) {
   .section {
     padding: 5rem 0;
@@ -370,7 +504,8 @@
   .collage__grid,
   .featured__grid,
   .split,
-  .editorial-cta__grid {
+  .editorial-cta__grid,
+  .contact-us__grid {
     grid-template-columns: 1fr;
   }
   .featured__large img {
@@ -384,7 +519,8 @@
     order: 1;
     padding: 2.5rem;
   }
-  .stories__grid {
+  .stories__grid,
+  .certs__grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.75rem;
   }
@@ -401,7 +537,11 @@
   .collage__images {
     aspect-ratio: 3 / 4;
   }
-  .stories__grid {
+  .stories__grid,
+  .certs__grid {
+    grid-template-columns: 1fr;
+  }
+  .contact-us__form-row {
     grid-template-columns: 1fr;
   }
 }

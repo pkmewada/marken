@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="css/header.css" />
   <link rel="stylesheet" href="css/hero.css" />
   <link rel="stylesheet" href="css/home.css" />
+  <link rel="stylesheet" href="css/blog.css" />
   <link rel="stylesheet" href="css/footer.css" />
   <style>
     /* vertical slider – placed after Our Story section */
@@ -316,7 +317,7 @@
     <div class="header-utility">
       <div class="container header-utility__inner">
         <div class="header-utility__left">
-          <a href="index.html#clients">Global Offices</a>
+          <a href="index.html#offices">Global Offices</a>
           <a href="index.html#contact">Contact Us</a>
         </div>
         <div class="header-utility__right">
@@ -362,6 +363,7 @@
           </div>
           <a href="index.html#certifications">Certificates</a>
           <a href="index.html#clients">Clients</a>
+          <a href="blog.html">Blog</a>
           <a href="index.html#about">About Us</a>
         </nav>
       </div>
@@ -380,6 +382,7 @@
       </div>
       <a href="index.html#certifications">Certificates</a>
       <a href="index.html#clients">Clients</a>
+      <a href="blog.html">Blog</a>
       <a href="index.html#contact">Contact Us</a>
     </nav>
   </div>
@@ -401,7 +404,7 @@
     <main>
 
       <!-- Editorial collage: our story -->
-      <section class="section collage">
+      <section class="section collage" id="about">
         <div class="container collage__grid">
           <div class="collage__images reveal">
             <img src="images/products/ult-deep-freezer-86.webp" alt="MarkEn ULT Deep Freezer" />
@@ -565,7 +568,7 @@
       </section>
 
       <!-- Stats -->
-      <section class="stats">
+      <section class="stats" id="clients">
         <div class="container stats__grid">
           <div class="reveal"><span class="stats__value">25+</span><span class="stats__label">Years in Business</span></div>
           <div class="reveal"><span class="stats__value">400+</span><span class="stats__label">Product Range</span></div>
@@ -604,19 +607,134 @@
         </div>
       </section>
 
-      <!-- Final CTA -->
-      <section class="final-cta">
-        <div class="container final-cta__content reveal">
-          <span class="eyebrow">Get in Touch</span>
-          <h2>Let's Build Your Facility's Future</h2>
-          <p>Speak with our team about outfitting your hospital, lab or blood bank with WHO PQS accredited MarkEn systems.</p>
-          <a href="mailto:info@markenworld.com" class="btn btn-light">Make an Enquiry</a>
+      <!-- Certifications -->
+      <section class="section certs container" id="certifications">
+        <div class="section-head">
+          <span class="eyebrow reveal">Certifications</span>
+          <h2 class="reveal">Certified &amp; Trusted Worldwide</h2>
+          <p class="reveal">MarkEn's manufacturing and products are certified to the international standards healthcare institutions rely on. Tap a certification to learn what it covers.</p>
+        </div>
+        <div class="certs__grid">
+          <button type="button" class="cert-card reveal" aria-expanded="false">
+            <span class="cert-card__head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="9" r="6.5"/><path d="M8.5 14.5 7 22l5-2.5 5 2.5-1.5-7.5"/></svg>
+              <span class="cert-card__name">WHO PQS</span>
+              <span class="icon">+</span>
+            </span>
+            <span class="cert-card__desc"><span>WHO's Performance, Quality and Safety programme prequalifies medical devices for procurement by UN agencies and national health programmes — MarkEn holds 11+ WHO PQS accredited products, the most of any Indian brand.</span></span>
+          </button>
+          <button type="button" class="cert-card reveal" aria-expanded="false">
+            <span class="cert-card__head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="9" r="6.5"/><path d="M8.5 14.5 7 22l5-2.5 5 2.5-1.5-7.5"/></svg>
+              <span class="cert-card__name">ISO 9001:2015</span>
+              <span class="icon">+</span>
+            </span>
+            <span class="cert-card__desc"><span>The international standard for quality management systems, ensuring consistent processes, continual improvement and customer satisfaction across our design, manufacturing and after-sales service.</span></span>
+          </button>
+          <button type="button" class="cert-card reveal" aria-expanded="false">
+            <span class="cert-card__head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="9" r="6.5"/><path d="M8.5 14.5 7 22l5-2.5 5 2.5-1.5-7.5"/></svg>
+              <span class="cert-card__name">ISO 13485:2016</span>
+              <span class="icon">+</span>
+            </span>
+            <span class="cert-card__desc"><span>The dedicated quality management standard for medical device manufacturers, covering regulatory compliance, risk management and full traceability across the product lifecycle.</span></span>
+          </button>
+          <button type="button" class="cert-card reveal" aria-expanded="false">
+            <span class="cert-card__head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="9" r="6.5"/><path d="M8.5 14.5 7 22l5-2.5 5 2.5-1.5-7.5"/></svg>
+              <span class="cert-card__name">ISO 14001:2015</span>
+              <span class="icon">+</span>
+            </span>
+            <span class="cert-card__desc"><span>The international standard for environmental management systems, reflecting our commitment to reducing environmental impact across manufacturing operations.</span></span>
+          </button>
+          <button type="button" class="cert-card reveal" aria-expanded="false">
+            <span class="cert-card__head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="9" r="6.5"/><path d="M8.5 14.5 7 22l5-2.5 5 2.5-1.5-7.5"/></svg>
+              <span class="cert-card__name">WHO GMP</span>
+              <span class="icon">+</span>
+            </span>
+            <span class="cert-card__desc"><span>WHO's Good Manufacturing Practices guidelines ensure products are consistently produced and controlled to the quality standards required for their intended use, minimizing risk at every stage of production.</span></span>
+          </button>
+        </div>
+      </section>
+
+      <!-- From the Blog -->
+      <section class="section container">
+        <div class="stories__head">
+          <h2 class="reveal">From the Blog</h2>
+          <a href="blog.html" class="reveal">View All Articles <i>&rarr;</i></a>
+        </div>
+        <div class="blog-grid" id="home-blog-grid"></div>
+      </section>
+
+      <!-- Contact Us -->
+      <section class="section contact-us container" id="contact">
+        <div class="section-head">
+          <span class="eyebrow reveal">Get in Touch</span>
+          <h2 class="reveal">Let's Build Your Facility's Future</h2>
+          <p class="reveal">Speak with our team about outfitting your hospital, lab or blood bank with WHO PQS accredited MarkEn systems — we respond to every enquiry.</p>
+        </div>
+
+        <div class="contact-us__grid">
+          <div class="contact-us__info reveal">
+            <div class="contact-detail">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12a8 8 0 0 1 16 0v5a2 2 0 0 1-2 2h-1v-6h3M4 17v-5h3v6H6a2 2 0 0 1-2-2z"/></svg>
+              <div>
+                <span class="contact-detail__label">Phone</span>
+                <a class="contact-detail__value" href="tel:+919130305959">+91 91 3030 5959</a>
+              </div>
+            </div>
+            <div class="contact-detail">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
+              <div>
+                <span class="contact-detail__label">Email</span>
+                <a class="contact-detail__value" href="mailto:info@markenworld.com">info@markenworld.com</a>
+              </div>
+            </div>
+            <div class="contact-detail">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 8.6c0 4.4-8.8 10.4-8.8 10.4S3.2 13 3.2 8.6a4.6 4.6 0 0 1 8.8-1.8 4.6 4.6 0 0 1 8.8 1.8z"/></svg>
+              <div>
+                <span class="contact-detail__label">Global Sales Office</span>
+                <span class="contact-detail__value">05, A-44, VDS Tower, Sector 2, Noida, UP, India</span>
+              </div>
+            </div>
+            <div class="contact-detail">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21V8l7-4 7 4v13"/><path d="M10 21v-6h4v6"/><path d="M17 21V11l4 2v8"/></svg>
+              <div>
+                <span class="contact-detail__label">Factory</span>
+                <span class="contact-detail__value">93/1 &amp; 2, MIDC, Satpur Colony, Nashik, Maharashtra, India</span>
+              </div>
+            </div>
+          </div>
+
+          <form class="contact-us__form reveal" id="contact-form">
+            <div class="contact-us__form-row">
+              <label>Full Name
+                <input type="text" name="name" placeholder="Your name" required />
+              </label>
+              <label>Email Address
+                <input type="email" name="email" placeholder="you@example.com" required />
+              </label>
+            </div>
+            <div class="contact-us__form-row">
+              <label>Phone Number
+                <input type="tel" name="phone" placeholder="+91 00000 00000" />
+              </label>
+              <label>Subject
+                <input type="text" name="subject" placeholder="How can we help?" />
+              </label>
+            </div>
+            <label>Message
+              <textarea name="message" rows="5" placeholder="Tell us about your requirement…" required></textarea>
+            </label>
+            <button type="submit" class="btn btn-fill">Send Message</button>
+          </form>
         </div>
       </section>
 
     </main>
 
-    <footer class="site-footer" id="contact">
+    <footer class="site-footer">
       <div class="site-footer__newsletter">
         <div class="container site-footer__newsletter-inner">
           <div>
@@ -653,7 +771,7 @@
             <li><a href="products.html?category=medical-equipment">Medical Equipment</a></li>
           </ul>
         </div>
-        <div class="site-footer__col" id="certifications">
+        <div class="site-footer__col">
           <h4>Certifications</h4>
           <ul>
             <li>WHO PQS</li>
@@ -663,16 +781,17 @@
             <li>WHO GMP</li>
           </ul>
         </div>
-        <div class="site-footer__col" id="about">
+        <div class="site-footer__col">
           <h4>Company</h4>
           <ul>
             <li><a href="index.html#certifications">Certificates</a></li>
             <li><a href="index.html#clients">Clients</a></li>
             <li><a href="products.html">Gallery</a></li>
+            <li><a href="blog.html">Blog</a></li>
             <li><a href="index.html#contact">Contact Us</a></li>
           </ul>
         </div>
-        <div class="site-footer__col" id="clients">
+        <div class="site-footer__col" id="offices">
           <h4>Get in Touch</h4>
           <ul class="site-footer__contact">
             <li><a href="tel:+919130305959">+91 91 3030 5959</a></li>
@@ -840,6 +959,39 @@
 
     })();
   </script>
+  <script src="js/blog-data.js"></script>
+  <script src="js/blog-render.js"></script>
   <script src="js/main.js"></script>
+  <script>
+    document.querySelectorAll(".cert-card").forEach((card) => {
+      const desc = card.querySelector(".cert-card__desc");
+      card.addEventListener("click", () => {
+        const isOpen = card.classList.toggle("is-open");
+        card.setAttribute("aria-expanded", isOpen);
+        desc.style.maxHeight = isOpen ? `${desc.scrollHeight}px` : "";
+      });
+    });
+
+    document.getElementById("contact-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const data = new FormData(this);
+      const body = `Name: ${data.get("name")}\nEmail: ${data.get("email")}\nPhone: ${data.get("phone") || "—"}\n\n${data.get("message")}`;
+      const subject = data.get("subject") || `Website Enquiry from ${data.get("name")}`;
+      window.location.href = `mailto:info@markenworld.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    });
+  </script>
+  <script>
+    document.getElementById("home-blog-grid").innerHTML = getFeaturedBlogPosts(3).map(blogCardHTML).join("");
+    document.querySelectorAll("#home-blog-grid .reveal").forEach((el) => {
+      new IntersectionObserver((entries, obs) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            obs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: "0px 0px -8% 0px" }).observe(el);
+    });
+  </script>
 </body>
 </html>
