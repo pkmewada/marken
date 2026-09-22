@@ -1,6 +1,9 @@
 /* product-details.html — Apple-style product page (test).
-   Reuses the site's pinned .hero component (css/hero.css) for the
-   full-bleed top section; everything below is specific to this page. */
+   Reuses the site's .hero component (css/hero.css) for the full-bleed
+   top section, but overrides its pinned/fixed positioning below so the
+   header sits in its own space above it instead of floating over it —
+   see "Header / hero separation" below. Everything else on this page is
+   specific to product-details.html. */
 
 /* Product photography here is isolated studio shots on light backgrounds,
    not full-bleed environmental footage — stretching it edge-to-edge like
@@ -9,6 +12,53 @@
 #pd-hero-image {
   object-fit: contain;
   padding: clamp(2rem, 8vw, 7rem) clamp(1.5rem, 10vw, 10rem) clamp(6rem, 14vw, 11rem);
+}
+
+/* ---------- Header / hero separation (Product Details only) ----------
+   Unlike the homepage's full-bleed footage, this page's hero is a
+   letterboxed product shot — floating the transparent header over it
+   hides the top of the frame and kills contrast. Scoped to body.pd-page
+   (set on product-details.html only) so header.css/hero.css and the
+   pinned, header-over-hero behavior on index.html are untouched.
+   Sticky (not fixed) so the header still reserves its own space in
+   normal flow — the hero simply starts right after it, no spacer or
+   padding-compensation needed. Colors mirror .site-header.is-solid so
+   the nav stays readable now that it's no longer transparent-over-hero. */
+body.pd-page .site-header {
+  position: sticky;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 0 var(--border);
+}
+body.pd-page .site-header .header-utility {
+  border-bottom-color: var(--border);
+}
+body.pd-page .site-header .header-utility a,
+body.pd-page .site-header .header-utility button {
+  color: var(--body);
+}
+body.pd-page .site-header .header-utility a:hover,
+body.pd-page .site-header .header-utility button:hover {
+  color: var(--navy);
+}
+body.pd-page .site-header .header-logo img {
+  filter: none;
+}
+body.pd-page .site-header .header-nav > .nav-item > a,
+body.pd-page .site-header .header-nav > a {
+  color: var(--ink);
+}
+body.pd-page .site-header .header-burger span {
+  background: var(--ink);
+}
+/* .hero was position: fixed (pinned to the viewport, same as the
+   homepage); putting it back into normal flow lets it sit directly
+   after the now in-flow header. It stays a positioning context (still
+   needed by .hero__video/.hero__scrim/.hero__content/.pd-hero-actions,
+   which are all position: absolute) and keeps its height/media/actions
+   exactly as before — only where it sits in the layout changes. */
+body.pd-page .hero {
+  position: relative;
 }
 
 /* ---------- Hero action row (over the media, bottom-right) ---------- */
