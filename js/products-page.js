@@ -1,7 +1,7 @@
 function productCardHTML(product) {
   const category = getCategory(product.category);
   return `
-    <a href="product-details.html?slug=${product.slug}" class="product-card">
+    <a href="product-details/${product.slug}" class="product-card">
       <div class="product-card__frame">
         <img src="${product.image}" alt="${product.name}" loading="lazy" />
       </div>

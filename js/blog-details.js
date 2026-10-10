@@ -55,7 +55,7 @@ if (!post) {
   const ctaLink = document.getElementById("bd-cta-link");
   if (post.relatedProductSlug && getProduct(post.relatedProductSlug)) {
     const product = getProduct(post.relatedProductSlug);
-    ctaLink.href = `product-details.html?slug=${product.slug}`;
+    ctaLink.href = `product-details/${product.slug}`;
     ctaLink.textContent = `View ${product.name}`;
   } else {
     ctaLink.href = "index.html#contact";

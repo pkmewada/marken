@@ -4,11 +4,12 @@ This file is a cached technical reference for the MarkEn marketing/catalogue web
 
 ## 1. Project Overview
 
-MarkEn is a B2B medical-equipment manufacturer (cold chain, blood bank, hospital furniture, medical equipment). This repo is its **marketing/catalogue website**: a plain, static multi-page site — no framework, no bundler, no build step, no backend/CMS/API.
+MarkEn is a B2B medical-equipment manufacturer (cold chain, blood bank, hospital furniture, medical equipment). This repo is its **marketing/catalogue website**: plain HTML/CSS/JS pages (no framework, no bundler, no build step) plus a small **PHP + MySQL layer** for the product catalogue and the admin panel.
 
-- Ship as-is: open/serve the repository root directly (e.g. via WAMP) and it works.
+- Runs on Apache + PHP 8.1+ + MySQL (WAMP locally). `mod_rewrite` and `.htaccess` must be enabled.
+- **The database creates itself**: the first request that calls `db()` (`app/db.php`) and finds `marken_admin` missing runs `installDatabase()` from `app/schema.php`, which creates the DB and tables and seeds the original 4 categories + 24 products. No install step is needed.
 - `package.json` only holds **dev-only** tooling (`sharp`, `ffmpeg-static`) for one-off asset generation (`npm run optimize-images`, `npm run generate-hero-video`) — irrelevant to how the site runs in a browser.
-- All product/blog content is hardcoded in JS data files, not fetched from any API.
+- **Products/categories live in MySQL** and are served to the front-end by `api/catalog.php`. Blog content is still hardcoded in `js/blog-data.js`.
 - "Forms" (contact, newsletter, quote/enquiry/document requests) have no server: they build `mailto:` links or a `wa.me` (WhatsApp) link client-side. There is no cart, checkout, or payment flow anywhere on the site — it's lead-generation, not e-commerce.
 
 ## 2. Repository Structure
@@ -29,9 +30,24 @@ css/
   blog.css                    Shared blog card component + blog.html listing styles (also loaded by blog-details.html and index.html)
   blog-details.css            blog-details.html-only
   product-details.css         product-details.html-only (also overrides the shared hero for this page, see §8)
+app/                         Shared PHP (denied over HTTP by app/.htaccess)
+  config.php                 DB credentials, admin user + bcrypt hash, upload settings
+  db.php                     db() PDO singleton (auto-installs on missing DB), dbOne/dbAll/dbRun, toJson/fromJson
+  schema.php                 installDatabase() + migrateSchema() (idempotent). db() runs migrateSchema() once whenever
+                             app/.schema-version (gitignored) differs from SCHEMA_VERSION in db.php — bump it when adding tables/columns
+  mailer.php                 sendMail($to, $subject, $html, $attachments) — MIME + minimal SMTP client (falls back to mail())
+  public-api.php             Shared guards for public form endpoints: readPublicForm(), emailError(), rateLimit(), jsonOut()
+api/
+  catalog.php                Emits `const CATEGORIES = …; const PRODUCTS = …;` as JavaScript (published products only)
+  categories.php             JSON category list for the header mega menu / mobile menu
+  document-request.php       Product page doc cards → emails the document (attached if uploaded) + logs to documentRequests
+  enquiry.php                Homepage contact form → enquiries
+  newsletter.php             Footer newsletter → newsletterSubscribers
+admin/                       PHP admin panel — see §13
+uploads/                     Files uploaded from the admin (script execution denied by uploads/.htaccess)
 js/
   main.js                    Shared: header scroll-solid toggle, mega menu, mobile menu, .reveal animation, homepage collage carousel, newsletter form — loaded on every page
-  data.js                    Shared PRODUCTS/CATEGORIES array + getProduct/getCategory/etc. — loaded by index, products, product-details, blog-details
+  data.js                    Helper functions only (getProduct/getCategory/etc.) over the globals from api/catalog.php — loaded by products, product-details, blog-details, always AFTER api/catalog.php
   blog-data.js                Shared BLOG_POSTS/BLOG_CATEGORIES + helpers — loaded by index, blog, blog-details
   blog-render.js              Shared blogCardHTML() template — loaded wherever blog cards render
   products-page.js            products.html-only: renders/filters the product grid
@@ -77,8 +93,8 @@ Every page loads `css/base.css`, `css/header.css`, `css/footer.css`, plus its ow
 
 No modules, no bundler — plain global-scope scripts loaded in `<script>` tags at the bottom of `<body>`, relying on load order for shared globals.
 
-- **`main.js`** (every page): header scroll-solid toggle (adds `.is-solid` to `.site-header` once `window.scrollY > 40`, or immediately if the page has no `.hero`), mega-menu hover-to-open, mobile menu open/close, a generic `IntersectionObserver` that adds `.is-visible` to `.reveal` elements present at initial load, the homepage "our story" collage carousel (guarded — no-ops if `.collage__nav` isn't present), and the newsletter form handler (guarded similarly).
-- **`data.js`** (index, products, product-details, blog-details): hardcoded `CATEGORIES` and `PRODUCTS` arrays plus `getCategory()`, `getProduct()`, `getProductsByCategory()`, `getRelatedProducts()`.
+- **`main.js`** (every page): header scroll-solid toggle (adds `.is-solid` to `.site-header` once `window.scrollY > 40`, or immediately if the page has no `.hero`), mega-menu hover-to-open, mobile menu open/close, **header categories** (fetches `api/categories.php` and rebuilds `.mega-menu__grid` and `.mobile-menu__categories` from the DB; inserts an `hr.mega-menu__divider` before every new row of 4; the hardcoded category links in each HTML file are only a fallback if the request fails), a generic `IntersectionObserver` that adds `.is-visible` to `.reveal` elements present at initial load, the homepage "our story" collage carousel (guarded — no-ops if `.collage__nav` isn't present), and the newsletter form handler (guarded similarly).
+- **`api/catalog.php` → `data.js`** (products, product-details, blog-details): `api/catalog.php` is loaded as a `<script>` and defines the `CATEGORIES` and `PRODUCTS` globals from MySQL (product keys: `slug`, `name`, `category`, `image`, `featured`, `description`, `fullDescription`, `gallery`, `features`, `applications`, `specifications`, `certifications`, `documents`, `metaTitle`, `metaDescription` — empty fields are omitted). `data.js` then defines `getCategory()`, `getProduct()`, `getProductsByCategory()`, `getRelatedProducts()`. Draft products are never emitted.
 - **`blog-data.js`** (index, blog, blog-details): hardcoded `BLOG_CATEGORIES` and `BLOG_POSTS` arrays plus `getBlogCategory()`, `getBlogPost()`, `getRelatedBlogPosts()`, `formatBlogDate()`.
 - **`blog-render.js`** (index, blog, blog-details): the single shared `blogCardHTML(post)` template function used everywhere a blog card is rendered.
 - **`products-page.js`** (products.html only): reads `?category=` from the URL, renders/filters `.products-grid` client-side, syncs category/search state back into the URL via `history.replaceState`.
@@ -112,11 +128,15 @@ No modules, no bundler — plain global-scope scripts loaded in `<script>` tags 
 3. `<div class="hero-spacer">` then `<div class="page-wrap"><main>…</main><footer>…</footer></div>`.
 4. Inside `<main>`: breadcrumb → media slider (`.pd-slider`, JS-driven, up to 2 images: product photo + category banner) → applications section (banner image + tag list, hidden entirely if the product has no `applications`) → certifications badge grid (company-wide, static list, same 5 certs on every product) → "Why Choose MarkEn" 4-card grid (fully static, not product-specific) → documentation request cards (4 static cards, each a `mailto:` link pre-filled per product) → FAQ accordion (5 static Q&As, not product-specific).
 
-**Data source**: everything product-specific comes from `PRODUCTS` in `js/data.js`, looked up by the `?slug=` query param in `product-details.js`. Fields used: `name`, `category`, `image`, `description` (used only for the `<meta name="description">`), `applications` (optional — drives the applications section). Fields defined in `data.js` but **not used** on this page: `features` (see below).
+**URL**: canonical URL is `/product-details/{slug}` (root `.htaccess` rewrites it to `product-details.html?slug=`; legacy `?slug=` still works). Because the clean URL adds a path segment, `product-details.html` writes a `<base href>` pointing at the site root as the first thing in `<head>`, and `product-details.js` re-points in-page `#anchor` links at the current URL (otherwise they would resolve to the homepage). Root `.htaccess` must keep `-MultiViews` or this URL 404s.
+
+**Hero media**: if the product has `heroMedia` (admin "Hero Media" card), `product-details.js` adds `.pd-hero--cover` to `.hero` and shows it full-bleed (`object-fit: cover`, no padding); `heroMediaType: "video"` swaps `#pd-hero-image` for a `<video class="hero__video">` (autoplay, muted, loop, playsinline, poster = product image; no autoplay under prefers-reduced-motion). Without hero media the product `image` is shown contained with padding (designed for studio shots on navy).
+
+**Data source**: everything product-specific comes from `PRODUCTS` (served by `api/catalog.php` from MySQL), looked up by slug in `product-details.js`. Fields used: `name`, `category`, `image`, `gallery` (extra slider images; falls back to the category banner when empty), `description` (used only for the `<meta name="description">`), `applications` (optional — drives the applications section). Fields stored but **not yet rendered** on this page: `features`, `fullDescription`, `specifications`, `certifications`, `documents`, `metaTitle`/`metaDescription`.
 
 **No pricing, no variants/sizes, no add-to-cart** — this is not an e-commerce product page. The CTAs are all lead-gen: "Request a Quote" and "Enquire Now" open pre-filled `mailto:` links, "WhatsApp" opens a pre-filled `wa.me` link, "Download Brochure" is an in-page anchor jump to the Documentation section (also `mailto:`-based, since no PDF assets exist to serve).
 
-**Notable gap**: `PRODUCTS[].features` (title+description pairs, present on the 4 "featured" products) is defined in `data.js` but never rendered anywhere in `product-details.js` — dead data as far as this page is concerned.
+**Notable gap**: `features` (title+description pairs, present on the 4 "featured" products) and the other admin-managed fields listed above are in the DB but not rendered by `product-details.js` yet.
 
 **Media slider**: `.pd-slider` shows at most 2 images (product photo, then category banner if different) with prev/next arrows and dot pagination; if only 1 image is available, the arrows/dots are hidden via inline `style.display`. CSS defines a `.pd-slider__video` class but no video slide is ever added by JS — unused/dead CSS, written for a feature that doesn't exist yet.
 
@@ -182,8 +202,8 @@ No modules, no bundler — plain global-scope scripts loaded in `<script>` tags 
 - Cache-busting via `?v=2` query strings on every `<link>`/`<script>` tag referencing `css/`/`js/` files — bump this manually (repo-wide, since it's hardcoded per tag) when a change needs to force-refresh cached assets for returning visitors.
 - BEM-ish naming with page-scoped prefixes: `pd-` (product-details), `bd-` (blog-details), `vs-` (homepage vertical slider), unprefixed for genuinely shared components (`.site-header`, `.site-footer`, `.btn`, `.product-card`, `.blog-card`).
 - Header/mobile-menu/footer markup is intentionally copy-pasted into every HTML file (no templating system exists) — any edit to shared chrome must be manually replicated across all 5 HTML files or pages will visually diverge.
-- Data lives in hardcoded JS arrays (`data.js`, `blog-data.js`), not an API/CMS — adding a product/post means editing those files directly.
-- Forms have no backend — they resolve to `mailto:`/`wa.me` links, not fetch/XHR calls.
+- Product/category data lives in MySQL and is edited through the admin panel. Blog posts still live in `blog-data.js`. To change the *initial* seed catalogue, edit `app/schema.php`.
+- Contact form, footer newsletter and product document requests POST to `api/*.php` (see §14). The hero CTAs (Request a Quote / Enquire Now / WhatsApp) are still `mailto:`/`wa.me` links.
 - Source comments in this codebase explain **why**, not what (e.g. the hero.css pinned-hero comment, the product-details.css `object-fit` rationale, the `optimize-images.mjs`/`generate-hero-video.mjs` asset-choice comments) — match that style for any new non-obvious code.
 
 ## 11. Important Warnings
@@ -191,9 +211,50 @@ No modules, no bundler — plain global-scope scripts loaded in `<script>` tags 
 - **`.site-header` rules in `header.css` affect all 5 pages.** Any change to header position, sizing, or stacking affects the whole site, not just one page.
 - **`.hero` / `.hero-spacer` / `.page-wrap` rules in `hero.css` affect both index.html and product-details.html identically** — these are the only two pages that load `hero.css`, and they share those exact class names with no scoping. A change meant only for product-details.html (like the upcoming header/hero separation) must not edit these shared selectors directly — see the scoping approach described in §8.
 - **`main.js`'s `hasHero` check** (`!!document.querySelector(".hero")`) determines whether the header starts transparent or always-solid on load. If a future change renames `.hero` or removes it from a page without updating this check's assumptions, the header's transparent-over-hero behavior could silently break.
-- **`data.js` and `blog-data.js` are multi-page dependencies.** `data.js` is consumed by index.html, products.html, product-details.html, and blog-details.html (for the related-product CTA link); `blog-data.js` is consumed by index.html, blog.html, and blog-details.html. Renaming or removing any exported helper (`getProduct`, `getCategory`, `getProductsByCategory`, `getRelatedProducts`, `getBlogPost`, `getBlogCategory`, `getRelatedBlogPosts`, `formatBlogDate`) requires checking every consumer.
+- **`api/catalog.php` + `data.js` and `blog-data.js` are multi-page dependencies.** The catalog pair is consumed by products.html, product-details.html, and blog-details.html (for the related-product CTA link), in that script order; `blog-data.js` is consumed by index.html, blog.html, and blog-details.html. Renaming or removing any exported helper (`getProduct`, `getCategory`, `getProductsByCategory`, `getRelatedProducts`, `getBlogPost`, `getBlogCategory`, `getRelatedBlogPosts`, `formatBlogDate`) requires checking every consumer.
 - **Footer markup differs slightly per page** (which element carries `id="contact"`, and product-details.html nests its footer one level deeper inside `.page-wrap`) — don't assume a straight copy-paste of one page's footer onto another without checking anchor links (`#contact`) still resolve correctly.
 - **index.html has inline `<style>`/`<script>` blocks** not mirrored in `css/`/`js/` (the vertical-slider CSS, and three inline scripts) — changes to homepage-only behavior may need to happen inside index.html itself, not in the shared files.
+
+## 13. Admin Panel (`admin/`)
+
+PHP + MySQL, Bootstrap 5.3.2 + Bootstrap Icons from `cdn.jsdelivr.net` (no SRI hashes — wrong hashes previously blocked the stylesheet). Login: `admin` / `marken@2024` (hash in `app/config.php`). Entry: `/admin/` → `login` or `products`.
+
+```
+admin/
+  .htaccess          -MultiViews; /admin/page → page.php; GET /admin/page.php → 301 /admin/page;
+                     products/new, products/edit/{slug} → product-form.php; categories/edit/{slug} → categories.php
+  index.php          Redirects to products or login
+  login.php / logout.php
+  products.php       List (search, category filter, sort, pagination) + delete
+  product-form.php   Create (/admin/products/new) and edit (/admin/products/edit/{slug}) — looked up by slug, no ids in URLs
+  categories.php     List + inline create/edit (/admin/categories/edit/{slug}); delete is blocked while products use the category; renaming a slug re-points its products
+  enquiries.php      "Contact Enquiries": list, status change, delete (filled by the homepage contact form)
+  document-requests.php  Product document leads (email, product, document, mail status) + CSV export
+  newsletter.php     Footer newsletter subscribers + CSV export
+  upload.php         JSON upload endpoint used by the forms → uploads/ (images/docs 10 MB, MP4/WebM video 50 MB).
+                     PHP's 2 MB default is raised for admin/ only: admin/.user.ini (FastCGI — WAMP runs PHP via
+                     mod_fcgid, which ignores php_value) and an <IfModule mod_php.c> block in admin/.htaccess
+  includes/          auth.php (session, CSRF, validation, helpers), layout-top.php, layout-bottom.php — denied over HTTP
+  assets/            admin.css, admin.js (table engine, drop-zone uploads, slug autofill, delete confirm)
+```
+
+- **DB tables** (camelCase columns): `categories` (id, slug, name, tagline, image, sortOrder, createdAt, updatedAt), `products` (id, slug, name, categorySlug, status `published|draft`, featured, image, heroMediaType `image|video`, heroMedia, gallery/features/applications/specifications/certifications/documents as JSON, description, fullDescription, metaTitle, metaDescription, sortOrder, createdAt, updatedAt), `enquiries` (id, name, email, phone, subject, message, status `new|replied|closed`, createdAt).
+- **Page pattern**: `require includes/auth.php` → `requireLogin()` → handle POST (`verifyCsrf()` first, validate, PRG redirect with `setFlash()`) → set `$pageTitle`/`$pageActive`/`$topbarActions` → include `layout-top.php` → markup → optional `$pageScripts` → include `layout-bottom.php`.
+- **Security**: every POST form includes `csrfField()`; `upload.php` takes the token from the `X-CSRF-Token` header (read from the `csrf-token` meta tag). Every output goes through `h()`. Uploads are typed by `finfo` and the extension comes from the MIME map in `config.php`, never from the client filename. Product links/images must pass `isSafeLink()` (http(s), mailto, or `uploads/` / `images/` paths) so `javascript:` URLs can't reach the public site.
+- Links inside admin are extensionless and id-free (`products`, `products/edit/ventilator`) and rely on `admin/.htaccess`. Because routes are nested, `layout-top.php` emits `<base href="<?= adminUrl() ?>">` and `redirect()` builds absolute URLs via `adminUrl()` — keep links relative to the admin root, never `../`-relative to the current page (except `../` for site assets, which resolves from the admin root).
+- Every visible input/textarea carries a descriptive `placeholder` with an example value — keep that for new fields.
+
+## 14. Public Forms, Lead Capture & Email
+
+| Form | Front-end | Endpoint | Table | Admin page |
+|---|---|---|---|---|
+| Contact (index.html `#contact-form`) | inline script in index.html | `api/enquiry.php` | `enquiries` | Contact Enquiries |
+| Footer newsletter (every page) | `main.js` (adds `p.newsletter-status` after the form) | `api/newsletter.php` | `newsletterSubscribers` (unique email) | Newsletter (+CSV) |
+| Product documentation cards | `product-details.js` (card link → inline email form) | `api/document-request.php` | `documentRequests` | Document Requests (+CSV) |
+
+- **Genuine-record guards** (all in `app/public-api.php`, every endpoint uses them): POST only; cross-site `Origin` rejected; hidden `website` honeypot; `_t` = ms the page was open, added by `withBotCheck()` in `main.js` — under 2000 ms is treated as a bot; bots receive a fake `{"ok":true}` and nothing is stored. Emails: strict format, disposable-domain blocklist, DNS MX/A check, lower-cased before saving. Per-IP hourly caps (contact 5, docs 10, newsletter 5). Duplicates: newsletter by email; contact by email+message within 24h; documents not re-sent for the same email+product+document within 24h. Contact names must be letters only; messages allow at most 2 links. All SQL is prepared statements.
+- **Document resolution is server-side**: the browser sends only product slug + document label. Labels must be one of the 4 standard cards or a document label set on that product in the admin. Files under `uploads/` are attached; `https://` documents are sent as a download button; no file → a "team will send it shortly" email (admin shows "No file uploaded — send manually"). Admin-added labels beyond the standard 4 are rendered as extra cards.
+- **Email delivery** needs SMTP in `app/config.php` (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE` tls|ssl, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`). With `SMTP_HOST` empty it falls back to PHP `mail()`, which fails on a stock WAMP install — the request is still logged with `mailStatus = failed` and the visitor sees "our team will email it shortly".
 
 ## 12. Future Claude Instructions
 

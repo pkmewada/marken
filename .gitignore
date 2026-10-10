@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Runtime state written by the PHP app
+app/.schema-version
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

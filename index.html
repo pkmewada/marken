@@ -9,12 +9,12 @@
     content="MarkEn — precision-engineered medical cold chain, blood bank, hospital furniture and critical care technology, trusted by 20,000+ healthcare institutions worldwide."
   />
   <title>MarkEn | Precision Medical Technology</title>
-  <link rel="stylesheet" href="css/base.css?v=2" />
-  <link rel="stylesheet" href="css/header.css?v=2" />
+  <link rel="stylesheet" href="css/base.css?v=2154" />
+  <link rel="stylesheet" href="css/header.css?v=2151" />
   <link rel="stylesheet" href="css/hero.css?v=2" />
-  <link rel="stylesheet" href="css/home.css?v=2" />
+  <link rel="stylesheet" href="css/home.css?v=2152" />
   <link rel="stylesheet" href="css/blog.css?v=2" />
-  <link rel="stylesheet" href="css/footer.css?v=2" />
+  <link rel="stylesheet" href="css/footer.css?v=2153" />
   <style>
     /* vertical slider – placed after Our Story section */
     .vertical-slider-section {
@@ -527,7 +527,7 @@
               <div class="product-card-mini__info">
                 <span>Medical Cold Chain</span>
                 <h4>Passive Cold Box</h4>
-                <a href="product-details.html?slug=passive-cold-box">Details</a>
+                <a href="product-details/passive-cold-box">Details</a>
               </div>
               <span class="product-card-mini__page">1 / 6</span>
             </div>
@@ -545,7 +545,7 @@
             samples in clinical, biomedical, pharmaceutical, and research laboratories — ideal for
             blood banks, pathology labs, molecular biology, and biotech applications.
           </p>
-          <a href="product-details.html?slug=refrigerated-centrifuge" class="btn btn-dark">View Product</a>
+          <a href="product-details/refrigerated-centrifuge" class="btn btn-dark">View Product</a>
         </div>
         <div class="split__media reveal">
           <img src="images/products/refrigerated-centrifuge.webp" alt="Refrigerated Centrifuge" />
@@ -727,7 +727,9 @@
             <label>Message
               <textarea name="message" rows="5" placeholder="Tell us about your requirement…" required></textarea>
             </label>
+            <input type="text" name="website" tabindex="-1" autocomplete="off" hidden />
             <button type="submit" class="btn btn-fill">Send Message</button>
+            <p class="contact-us__status" role="status"></p>
           </form>
         </div>
       </section>
@@ -895,9 +897,10 @@
 
         // AT BOUNDARIES: pass scroll to page
         if((current === 0 && direction < 0) || (current === total - 1 && direction > 0)){
+          e.preventDefault();
           window.scrollBy({
             top: direction,
-            behavior: "auto"
+            behavior: "smooth"
           });
           return;
         }
@@ -961,7 +964,7 @@
   </script>
   <script src="js/blog-data.js"></script>
   <script src="js/blog-render.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/main.js?v=2155"></script>
   <script>
     document.querySelectorAll(".cert-card").forEach((card) => {
       const desc = card.querySelector(".cert-card__desc");
@@ -972,12 +975,29 @@
       });
     });
 
-    document.getElementById("contact-form").addEventListener("submit", function (e) {
+    // Contact form → api/enquiry.php (saved for the admin "Contact Enquiries" list)
+    document.getElementById("contact-form").addEventListener("submit", async function (e) {
       e.preventDefault();
-      const data = new FormData(this);
-      const body = `Name: ${data.get("name")}\nEmail: ${data.get("email")}\nPhone: ${data.get("phone") || "—"}\n\n${data.get("message")}`;
-      const subject = data.get("subject") || `Website Enquiry from ${data.get("name")}`;
-      window.location.href = `mailto:info@markenworld.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      const form = this;
+      const status = form.querySelector(".contact-us__status");
+      const button = form.querySelector('button[type="submit"]');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      button.disabled = true;
+      showFormMessage(status, "Sending…");
+      try {
+        const res = await fetch("api/enquiry.php", { method: "POST", body: withBotCheck(new FormData(form)) });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.message);
+        form.reset();
+        showFormMessage(status, data.message, "success");
+      } catch (err) {
+        showFormMessage(status, err.message || "Something went wrong. Please try again.", "error");
+      } finally {
+        button.disabled = false;
+      }
     });
   </script>
   <script>

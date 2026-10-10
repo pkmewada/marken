@@ -20,6 +20,14 @@
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Below 1024px the nav row only holds the burger + logo, so it doesn't need
+   the desktop height (which also stacks the nav links under the logo). */
+@media (max-width: 1024px) {
+  :root {
+    --nav-h: 72px;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -128,6 +136,14 @@ ul {
 .btn-fill:hover {
   background: var(--blue);
   border-color: var(--blue);
+}
+
+/* Inline form messages (see showFormMessage in main.js) fade out before clearing */
+[role="status"] {
+  transition: opacity 0.4s var(--ease);
+}
+[role="status"].is-fading {
+  opacity: 0;
 }
 
 .reveal {

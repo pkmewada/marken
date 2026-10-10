@@ -188,6 +188,13 @@
   color: var(--body);
   line-height: 1.5;
 }
+.mega-menu__divider {
+  grid-column: 1 / -1;
+  height: 0;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
 .mega-menu__all {
   width: var(--container);
   margin: 2rem auto 0;
@@ -247,6 +254,32 @@ body.menu-open {
   overflow: hidden;
 }
 
+/* The menu overlay is white, so the header must be readable over it even
+   when it is still transparent at the top of a hero page. */
+body.menu-open .site-header {
+  background: #fff;
+  box-shadow: 0 1px 0 var(--border);
+}
+body.menu-open .site-header .header-utility {
+  border-bottom-color: var(--border);
+}
+body.menu-open .site-header .header-utility a {
+  color: var(--body);
+}
+body.menu-open .site-header .header-logo img {
+  filter: none;
+}
+body.menu-open .site-header .header-burger span {
+  background: var(--ink);
+}
+/* Burger turns into a close (X) icon while the menu is open */
+body.menu-open .header-burger span:first-child {
+  transform: translateY(3.25px) rotate(45deg);
+}
+body.menu-open .header-burger span:last-child {
+  transform: translateY(-3.25px) rotate(-45deg);
+}
+
 @media (max-width: 1024px) {
   .header-nav,
   .header-utility__left {
@@ -254,5 +287,11 @@ body.menu-open {
   }
   .header-burger {
     display: flex;
+    /* larger tap target without changing the icon size */
+    padding: 12px 0;
+    box-sizing: content-box;
+  }
+  .header-logo img {
+    height: 26px;
   }
 }

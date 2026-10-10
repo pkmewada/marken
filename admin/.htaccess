@@ -1,0 +1,26 @@
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+
+# Hero videos can be up to 50 MB (see MAX_VIDEO_BYTES); PHP's default is 2 MB.
+<IfModule mod_php.c>
+  php_value upload_max_filesize 64M
+  php_value post_max_size 70M
+  php_value max_execution_time 120
+</IfModule>
+RewriteEngine On
+
+# /admin/page.php → /admin/page (GET only, so form posts are never redirected)
+RewriteCond %{REQUEST_METHOD} GET
+RewriteCond %{THE_REQUEST} \s(/\S*?)\.php[\s?] [NC]
+RewriteRule ^ %1 [R=301,L,QSA]
+
+# Pretty CRUD routes
+RewriteRule ^products/new/?$ product-form.php [L,QSA]
+RewriteRule ^products/edit/([a-z0-9-]+)/?$ product-form.php?slug=$1 [L,QSA]
+RewriteRule ^categories/edit/([a-z0-9-]+)/?$ categories.php?edit=$1 [L,QSA]
+
+# /admin/page → page.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^([a-z0-9-]+)$ $1.php [L,QSA]

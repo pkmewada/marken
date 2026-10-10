@@ -464,6 +464,26 @@ a.contact-detail__value:hover {
 .contact-us__form button {
   align-self: flex-start;
 }
+.contact-us__form button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.contact-us__status {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--body);
+}
+.contact-us__status:empty {
+  display: none;
+}
+.contact-us__status.is-success {
+  color: #067647;
+  font-weight: 500;
+}
+.contact-us__status.is-error {
+  color: #b42318;
+}
 
 /* ---- Stats band ---- */
 .stats {

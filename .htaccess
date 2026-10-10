@@ -1,0 +1,21 @@
+# MultiViews must stay off: it serves product-details.html for /product-details/slug
+# before mod_rewrite runs, which returns a 404.
+Options -Indexes -MultiViews
+RewriteEngine On
+
+# Clean product-detail URLs: /product-details/slug → product-details.html?slug=slug
+RewriteRule ^product-details/([^/]+)/?$ product-details.html?slug=$1 [L,QSA]
+
+# Remove .html extension from flat pages (e.g. /products → /products.html)
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.html -f
+RewriteRule ^([^/]+)$ $1.html [L]
+
+# Redirect .html requests to clean URL (301 permanent)
+RewriteCond %{THE_REQUEST} \s/([^.]+)\.html[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L]
+
+# Never serve source/config files.
+<FilesMatch "^(package(-lock)?\.json|CLAUDE\.md|\.gitignore|\.user\.ini)$">
+  Require all denied
+</FilesMatch>

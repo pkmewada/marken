@@ -11,7 +11,15 @@ function relatedMediaAlt(name) {
   return `${name} — MarkEn`;
 }
 
-const slug = new URLSearchParams(window.location.search).get("slug");
+// Support /product-details/slug (clean URL) and legacy ?slug= query param
+const _pathSlug = window.location.pathname.split("/product-details/")[1]?.replace(/\/$/, "");
+const slug = decodeURIComponent(_pathSlug || new URLSearchParams(window.location.search).get("slug") || "");
+
+// The page's <base> points at the site root, so in-page "#section" links must
+// be pinned to the current URL or they would jump to the homepage.
+document.querySelectorAll('a[href^="#"]:not([href="#"])').forEach((a) => {
+  a.href = window.location.pathname + window.location.search + a.getAttribute("href");
+});
 const product = slug ? getProduct(slug) : null;
 
 if (!product) {
@@ -35,8 +43,31 @@ if (!product) {
   document.getElementById("pd-breadcrumb-name").textContent = product.name;
 
   // Hero
-  document.getElementById("pd-hero-image").src = product.image;
-  document.getElementById("pd-hero-image").alt = relatedMediaAlt(product.name);
+  // Hero media (set in the admin) fills the whole hero; otherwise the product
+  // photo is shown contained, as designed for studio shots.
+  const heroImg = document.getElementById("pd-hero-image");
+  heroImg.alt = relatedMediaAlt(product.name);
+  if (product.heroMedia) {
+    document.querySelector(".hero").classList.add("pd-hero--cover");
+    if (product.heroMediaType === "video") {
+      const video = Object.assign(document.createElement("video"), {
+        className: "hero__video",
+        src: product.heroMedia,
+        poster: product.image,
+        muted: true,         // browsers only autoplay muted video
+        loop: true,
+        playsInline: true,
+        autoplay: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      });
+      video.setAttribute("muted", "");
+      video.setAttribute("aria-hidden", "true");
+      heroImg.replaceWith(video);
+    } else {
+      heroImg.src = product.heroMedia;
+    }
+  } else {
+    heroImg.src = product.image;
+  }
   document.getElementById("pd-hero-category").textContent = category.name;
   document.getElementById("pd-hero-name").textContent = product.name;
 
@@ -50,7 +81,8 @@ if (!product) {
   // Media slider — the product's own photo, plus its category banner as a
   // second angle. Both are real assets already used elsewhere on the site.
   const slides = [{ src: product.image, alt: product.name }];
-  if (category.image && category.image !== product.image) {
+  (product.gallery || []).forEach((src, i) => slides.push({ src, alt: `${product.name} — view ${i + 2}` }));
+  if (slides.length === 1 && category.image && category.image !== product.image) {
     slides.push({ src: category.image, alt: `${category.name} — MarkEn` });
   }
   const stage = document.querySelector(".pd-slider__stage");
@@ -101,10 +133,63 @@ if (!product) {
     .map((c) => `<span class="pd-cert-badge">${ICONS.badge}${c}</span>`)
     .join("");
 
-  // Documentation — no files exist to serve, so each card routes to a
-  // pre-filled enquiry email requesting that document for this product.
-  document.querySelectorAll(".pd-doc-card a").forEach((a) => {
-    a.href = mailto(`${a.dataset.doc} Request: ${product.name}`, `Please send the ${a.dataset.doc.toLowerCase()} for ${product.name}.`);
+  // Documentation — "Request by Email" turns into an email field; the server
+  // emails the document (attached when uploaded in the admin) and logs the lead.
+  const docGrid = document.querySelector(".pd-documentation__grid");
+  const docTemplate = docGrid.querySelector(".pd-doc-card");
+  const shownDocs = [...docGrid.querySelectorAll("[data-doc]")].map((a) => a.dataset.doc.toLowerCase());
+  (product.documents || []).forEach((d) => {
+    if (!d.label || shownDocs.includes(d.label.toLowerCase())) return;
+    const card = docTemplate.cloneNode(true);
+    card.querySelector("h3").textContent = d.label;
+    card.querySelector("p").textContent = "Additional product document";
+    card.querySelector("[data-doc]").dataset.doc = d.label;
+    docGrid.appendChild(card);
+  });
+
+  docGrid.addEventListener("click", (e) => {
+    const link = e.target.closest("a[data-doc]");
+    if (!link) return;
+    e.preventDefault();
+    const form = document.createElement("form");
+    form.className = "pd-doc-form";
+    form.noValidate = true;
+    form.innerHTML =
+      '<input type="email" name="email" required maxlength="200" placeholder="Enter your email address" aria-label="Your email address">' +
+      '<input type="text" name="website" tabindex="-1" autocomplete="off" hidden>' +
+      '<button type="submit">Send &rarr;</button>' +
+      '<p class="pd-doc-form__msg" role="status"></p>';
+    link.replaceWith(form);
+    const input = form.querySelector('input[name="email"]');
+    const msg = form.querySelector(".pd-doc-form__msg");
+    input.focus();
+
+    form.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      if (!input.value.trim() || !input.checkValidity()) {
+        showFormMessage(msg, "Please enter a valid email address.", "error");
+        return;
+      }
+      const button = form.querySelector("button");
+      button.disabled = true;
+      showFormMessage(msg, "Sending…");
+      const body = withBotCheck(new FormData(form));
+      body.set("email", input.value.trim());
+      body.append("product", product.slug);
+      body.append("document", link.dataset.doc);
+      try {
+        const res = await fetch("api/document-request.php", { method: "POST", body });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.message);
+        form.reset();
+        input.hidden = button.hidden = true;
+        // After the message fades, the card goes back to its "Request by Email" link.
+        showFormMessage(msg, data.message, "success", () => form.replaceWith(link));
+      } catch (err) {
+        showFormMessage(msg, err.message || "Something went wrong. Please try again.", "error");
+        button.disabled = false;
+      }
+    });
   });
 
   // FAQ accordion
@@ -116,6 +201,14 @@ if (!product) {
       answer.style.maxHeight = isOpen ? `${answer.scrollHeight}px` : "";
     });
   });
+
+  // Scrolled header — collapse header-main, show nav centered in utility bar
+  const pdHeader = document.querySelector(".site-header");
+  if (pdHeader) {
+    const syncScrolled = () => pdHeader.classList.toggle("pd-scrolled", window.scrollY > 10);
+    window.addEventListener("scroll", syncScrolled, { passive: true });
+    syncScrolled();
+  }
 
   // Re-run reveal observer for content injected after main.js already ran
   const revealTargets = document.querySelectorAll(".reveal:not(.is-visible)");

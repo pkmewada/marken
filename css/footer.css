@@ -39,6 +39,26 @@
   color: #fff;
   font-size: 0.9rem;
 }
+.newsletter-status {
+  flex-basis: 100%;
+  margin: -1rem 0 0;
+  font-size: 0.8rem;
+  text-align: right;
+  color: rgba(255, 255, 255, 0.7);
+}
+.newsletter-status:empty {
+  display: none;
+}
+.newsletter-status.is-success {
+  color: #7ee2a8;
+}
+.newsletter-status.is-error {
+  color: #ffb4a8;
+}
+.newsletter-form button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
 .newsletter-form input::placeholder {
   color: rgba(255, 255, 255, 0.5);
 }
@@ -142,6 +162,9 @@
   .site-footer__newsletter-inner {
     flex-direction: column;
     align-items: stretch;
+  }
+  .newsletter-status {
+    text-align: left;
   }
   .site-footer__bottom {
     flex-direction: column;

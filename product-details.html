@@ -2,15 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <!-- Clean URLs (/product-details/slug) add a path segment; anchor relative URLs to the site root. -->
+  <script>document.write('<base href="' + location.pathname.split('/product-details')[0] + '/">');</script>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="MarkEn product details." />
   <title>Product | MarkEn</title>
-  <link rel="stylesheet" href="css/base.css?v=2" />
-  <link rel="stylesheet" href="css/header.css?v=2" />
-  <link rel="stylesheet" href="css/hero.css?v=2" />
-  <link rel="stylesheet" href="css/product-details.css?v=2" />
-  <link rel="stylesheet" href="css/footer.css?v=2" />
+  <link rel="stylesheet" href="css/base.css?v=2154" />
+  <link rel="stylesheet" href="css/header.css?v=2151" />
+  <link rel="stylesheet" href="css/hero.css?v=2148" />
+  <link rel="stylesheet" href="css/product-details.css?v=2156" />
+  <link rel="stylesheet" href="css/footer.css?v=2153" />
 </head>
 <body class="pd-page">
 
@@ -38,6 +40,7 @@
           <img src="images/logo.svg" alt="MarkEn" />
         </a>
         <nav class="header-nav" aria-label="Primary">
+          <a href="index.html" class="pd-nav-home">Home</a>
           <div class="nav-item has-mega">
             <a href="products.html">Products</a>
             <div class="mega-menu">
@@ -300,8 +303,9 @@
     </footer>
   </div>
 
-  <script src="js/data.js"></script>
-  <script src="js/main.js"></script>
-  <script src="js/product-details.js"></script>
+  <script src="api/catalog.php"></script>
+  <script src="js/data.js?v=2149"></script>
+  <script src="js/main.js?v=2155"></script>
+  <script src="js/product-details.js?v=2156"></script>
 </body>
 </html>
