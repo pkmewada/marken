@@ -17,9 +17,11 @@
   <link rel="stylesheet" href="css/footer.css?v=2163" />
   <style>
     /* vertical slider – placed after Our Story section */
+    /* Fills the viewport below the compact (scrolled) header, so the whole slider is
+       visible while it is locked in place (see the slider script). */
     .vertical-slider-section {
       position: relative;
-      height: 100vh;
+      height: calc(100vh - var(--util-h));
       width: 100%;
       overflow: hidden;
       background: #0b1219;
@@ -49,9 +51,9 @@
     
     /* Slide content wrapper with zoom effect */
     .vertical-slider-track .vs-slide {
-      flex: 0 0 100vh;
+      flex: 0 0 100%;
       width: 100%;
-      height: 100vh;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -278,6 +280,13 @@
       overflow-y: scroll;
     }
     
+    /* The header does not collapse at 1024px and below, so leave room for all of it */
+    @media (max-width: 1024px) {
+      .vertical-slider-section {
+        height: calc(100vh - var(--header-h));
+      }
+    }
+
     /* small screens */
     @media (max-width: 768px) {
       .vs-dots {
@@ -879,34 +888,46 @@
         if(animating) return;
         current = index;
         animating = true;
-        track.style.transform = `translateY(-${current * 100}vh)`;
+        track.style.transform = `translateY(-${current * 100}%)`;
         updateUI();
         setTimeout(()=>{
           animating = false;
         }, 800);
       }
 
+      // LOCK: the slider takes over only once its top meets the bottom of the fixed header.
+      // Page scrolling that would carry it past that point (either direction) stops exactly
+      // there while slides remain; after the last (down) / first (up) slide the page scrolls on.
+      const siteHeader = document.querySelector(".site-header");
+      const offset = () => slider.getBoundingClientRect().top - (siteHeader ? siteHeader.offsetHeight : 0);
+      const isLocked = () => Math.abs(offset()) < 2;
+      const hasMore = (dir) => dir > 0 ? current < total - 1 : current > 0;
+
+      let lastY = window.scrollY;
+      let lastOffset = offset();
+      window.addEventListener("scroll", function(){
+        const y = window.scrollY;
+        const off = offset();
+        const dir = Math.sign(y - lastY);
+        const crossed = dir > 0 ? (lastOffset > -1 && off < -1) : (lastOffset < 1 && off > 1);
+        // Big jumps (anchor links, Home/End) skip the lock.
+        if(dir && crossed && hasMore(dir) && Math.abs(y - lastY) < window.innerHeight){
+          window.scrollTo({ top: y + off, behavior: "instant" });   // html has scroll-behavior: smooth
+        }
+        lastY = window.scrollY;
+        lastOffset = offset();
+      }, { passive: true });
+
       // Desktop Wheel
       slider.addEventListener("wheel", function(e){
         let direction = e.deltaY;
-        
-        // Check if slider is in viewport
-        let rect = slider.getBoundingClientRect();
-        let isInViewport = rect.top < window.innerHeight && rect.bottom > 0;
-        
-        if(!isInViewport) return;
-
-        // AT BOUNDARIES: pass scroll to page
-        if((current === 0 && direction < 0) || (current === total - 1 && direction > 0)){
-          e.preventDefault();
-          window.scrollBy({
-            top: direction,
-            behavior: "smooth"
-          });
-          return;
-        }
+        const dir = Math.sign(direction);
+        // Not locked yet, or no slides left that way: normal page scroll. While a slide
+        // is still animating, swallow the wheel so trackpad momentum can't leak to the page.
+        if(!dir || !isLocked() || (!hasMore(dir) && !animating)) return;
 
         e.preventDefault();
+        if(!hasMore(dir)) return;
 
         wheelDelta += direction;
         clearTimeout(wheelTimer);
@@ -930,31 +951,26 @@
         touchStart = e.touches[0].clientY;
       }, { passive: true });
 
+      // While locked, a swipe changes the slide instead of scrolling the page.
+      slider.addEventListener("touchmove", function(e){
+        const dir = Math.sign(touchStart - e.touches[0].clientY);
+        if(dir && isLocked() && (hasMore(dir) || animating)) e.preventDefault();
+      }, { passive: false });
+
       slider.addEventListener("touchend", function(e){
         let end = e.changedTouches[0].clientY;
         let diff = touchStart - end;
-        if(Math.abs(diff) < 50) return;
-        if(diff > 0 && current < total - 1){
-          goToSlide(current + 1);
-        }
-        if(diff < 0 && current > 0){
-          goToSlide(current - 1);
-        }
+        if(Math.abs(diff) < 50 || !isLocked()) return;
+        const dir = Math.sign(diff);
+        if(hasMore(dir)) goToSlide(current + dir);
       }, { passive: true });
 
-      // KEYBOARD
+      // KEYBOARD (only while locked; otherwise arrows scroll the page as usual)
       document.addEventListener("keydown", function(e){
-        let rect = slider.getBoundingClientRect();
-        let isInViewport = rect.top < window.innerHeight && rect.bottom > 0;
-        if(!isInViewport) return;
-        if(e.key === "ArrowDown" || e.key === "ArrowRight"){
-          e.preventDefault();
-          if(current < total - 1) goToSlide(current + 1);
-        }
-        if(e.key === "ArrowUp" || e.key === "ArrowLeft"){
-          e.preventDefault();
-          if(current > 0) goToSlide(current - 1);
-        }
+        const dir = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+        if(!dir || !isLocked() || !hasMore(dir)) return;
+        e.preventDefault();
+        goToSlide(current + dir);
       });
 
       // INITIAL
