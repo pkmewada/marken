@@ -1,6 +1,6 @@
 <?php
 /**
- * Expects: $pageTitle, $pageActive ('categories'|'products'|'enquiries'),
+ * Expects: $pageTitle, $pageActive (a key of $nav below, e.g. 'products' or 'blogs'),
  * optional $topbarActions (trusted HTML string).
  */
 $pageTitle     ??= 'Admin';
@@ -10,6 +10,10 @@ $nav = [
     'Catalogue' => [
         'categories' => ['categories', 'bi-grid-3x3-gap', 'Categories'],
         'products'   => ['products',   'bi-box-seam',     'Products'],
+    ],
+    'Blog' => [
+        'blogs'           => ['blogs',           'bi-journal-richtext', 'Blog Posts'],
+        'blog-categories' => ['blog-categories', 'bi-tags',             'Blog Categories'],
     ],
     'CRM' => [
         'enquiries'         => ['enquiries',         'bi-envelope',       'Contact Enquiries'],
@@ -30,7 +34,7 @@ $nav = [
   <title><?= h($pageTitle) ?> — MarkEn Admin</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="assets/admin.css?v=1">
+  <link rel="stylesheet" href="assets/admin.css?v=2">
 </head>
 <body>
 <aside class="mk-sidebar">

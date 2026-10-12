@@ -91,7 +91,8 @@ document.querySelectorAll('[data-image-upload]').forEach((zone) => {
 document.querySelectorAll('table[data-table]').forEach((table) => {
   const wrap = table.closest('.card');
   const search = wrap.querySelector('[data-table-search]');
-  const filter = wrap.querySelector('[data-table-filter]');
+  // <select data-table-filter="status"> matches <tr data-status>; a bare data-table-filter matches <tr data-filter>.
+  const filters = Array.from(wrap.querySelectorAll('[data-table-filter]'));
   const info = wrap.querySelector('[data-table-info]');
   const pager = wrap.querySelector('[data-table-pager]');
   const tbody = table.tBodies[0];
@@ -103,9 +104,9 @@ document.querySelectorAll('table[data-table]').forEach((table) => {
 
   function render() {
     const q = (search?.value || '').toLowerCase();
-    const f = filter?.value || '';
     const visible = rows.filter((r) =>
-      (!q || r.textContent.toLowerCase().includes(q)) && (!f || r.dataset.filter === f)
+      (!q || r.textContent.toLowerCase().includes(q))
+      && filters.every((f) => !f.value || r.dataset[f.dataset.tableFilter || 'filter'] === f.value)
     );
     const pages = Math.max(1, Math.ceil(visible.length / perPage));
     page = Math.min(page, pages);
@@ -142,6 +143,6 @@ document.querySelectorAll('table[data-table]').forEach((table) => {
   });
 
   search?.addEventListener('input', () => { page = 1; render(); });
-  filter?.addEventListener('change', () => { page = 1; render(); });
+  filters.forEach((f) => f.addEventListener('change', () => { page = 1; render(); }));
   render();
 });

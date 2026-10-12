@@ -18,6 +18,9 @@ RewriteRule ^ %1 [R=301,L,QSA]
 RewriteRule ^products/new/?$ product-form.php [L,QSA]
 RewriteRule ^products/edit/([a-z0-9-]+)/?$ product-form.php?slug=$1 [L,QSA]
 RewriteRule ^categories/edit/([a-z0-9-]+)/?$ categories.php?edit=$1 [L,QSA]
+RewriteRule ^blogs/new/?$ blog-form.php [L,QSA]
+RewriteRule ^blogs/edit/([a-z0-9-]+)/?$ blog-form.php?slug=$1 [L,QSA]
+RewriteRule ^blog-categories/edit/([a-z0-9-]+)/?$ blog-categories.php?edit=$1 [L,QSA]
 
 # /admin/page → page.php
 RewriteCond %{REQUEST_FILENAME} !-f

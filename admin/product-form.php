@@ -4,11 +4,6 @@ requireLogin();
 
 const CERT_OPTIONS = ['WHO PQS', 'ISO 9001:2015', 'ISO 13485:2016', 'ISO 14001:2015', 'WHO GMP', 'CE Mark', 'BIS', 'CDSCO'];
 
-// Only site-relative asset paths or http(s)/mailto links — blocks javascript: and similar.
-function isSafeLink(string $v): bool {
-    return (bool)preg_match('#^(https?://|mailto:|(uploads|images|documents)/)[^\s<>"\']*$#i', $v);
-}
-
 $editSlug   = is_string($_GET['slug'] ?? null) ? $_GET['slug'] : '';
 $id         = 0;
 $categories = dbAll('SELECT slug, name FROM `categories` ORDER BY sortOrder, name');

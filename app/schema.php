@@ -10,11 +10,14 @@ function installDatabase(): void {
     ]);
     $pdo->exec('CREATE DATABASE IF NOT EXISTS `' . DB_NAME . '` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
     $pdo->exec('USE `' . DB_NAME . '`');
-    migrateSchema($pdo);
+    migrateSchema($pdo, true);
     seedCatalogue($pdo);
+    // After the products exist, so blog posts can link their related product.
+    require_once __DIR__ . '/blog-seed.php';
+    importBlogSeed($pdo);
 }
 
-function migrateSchema(PDO $pdo): void {
+function migrateSchema(PDO $pdo, bool $freshInstall = false): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS `categories` (
         `id`        INT UNSIGNED NOT NULL AUTO_INCREMENT,
         `slug`      VARCHAR(100) NOT NULL,
@@ -105,6 +108,60 @@ function migrateSchema(PDO $pdo): void {
     // v4: optional full-bleed hero image/video for the product page.
     addColumnIfMissing($pdo, 'products', 'heroMediaType', "ENUM('image','video') DEFAULT NULL AFTER `gallery`");
     addColumnIfMissing($pdo, 'products', 'heroMedia', "VARCHAR(500) DEFAULT NULL AFTER `heroMediaType`");
+
+    // v5: blog. RESTRICT on categoryId: a category with posts can't be deleted (posts must be moved first);
+    // deactivating a category only hides it from the public filter — its posts stay online.
+    $s = $pdo->query("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'blogs'");
+    $hadBlogs = (bool)(int)$s->fetchColumn();
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS `blogCategories` (
+        `id`          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        `name`        VARCHAR(200) NOT NULL,
+        `slug`        VARCHAR(100) NOT NULL,
+        `description` VARCHAR(500) DEFAULT NULL,
+        `image`       VARCHAR(500) DEFAULT NULL,
+        `isActive`    TINYINT(1) NOT NULL DEFAULT 1,
+        `sortOrder`   INT NOT NULL DEFAULT 0,
+        `createdAt`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updatedAt`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `uqSlug` (`slug`),
+        KEY `idxActiveSort` (`isActive`, `sortOrder`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS `blogs` (
+        `id`               INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        `categoryId`       INT UNSIGNED NOT NULL,
+        `title`            VARCHAR(255) NOT NULL,
+        `slug`             VARCHAR(150) NOT NULL,
+        `excerpt`          VARCHAR(500) DEFAULT NULL,
+        `content`          MEDIUMTEXT,
+        `featuredImage`    VARCHAR(500) DEFAULT NULL,
+        `authorName`       VARCHAR(100) NOT NULL DEFAULT 'MarkEn Team',
+        `status`           ENUM('published','draft') NOT NULL DEFAULT 'draft',
+        `featured`         TINYINT(1) NOT NULL DEFAULT 0,
+        `relatedProductId` INT UNSIGNED DEFAULT NULL,
+        `publishedAt`      DATETIME DEFAULT NULL,
+        `metaTitle`        VARCHAR(200) DEFAULT NULL,
+        `metaDescription`  VARCHAR(300) DEFAULT NULL,
+        `createdAt`        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updatedAt`        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `uqSlug` (`slug`),
+        KEY `idxStatusPublished` (`status`, `publishedAt`),
+        KEY `idxCategory` (`categoryId`),
+        KEY `idxRelatedProduct` (`relatedProductId`),
+        CONSTRAINT `fkBlogsCategory` FOREIGN KEY (`categoryId`) REFERENCES `blogCategories` (`id`)
+            ON DELETE RESTRICT ON UPDATE CASCADE,
+        CONSTRAINT `fkBlogsRelatedProduct` FOREIGN KEY (`relatedProductId`) REFERENCES `products` (`id`)
+            ON DELETE SET NULL ON UPDATE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // Existing sites get the old static posts once; a fresh install imports them after seedCatalogue().
+    if (!$hadBlogs && !$freshInstall) {
+        require_once __DIR__ . '/blog-seed.php';
+        importBlogSeed($pdo);
+    }
 
     @file_put_contents(SCHEMA_VERSION_FILE, (string)SCHEMA_VERSION);
 }
