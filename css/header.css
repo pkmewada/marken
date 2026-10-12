@@ -136,6 +136,45 @@
   background: var(--ink);
 }
 
+/* Compact on scroll (.is-compact toggled by main.js): header-main collapses and the
+   nav floats centered into the utility bar. .header-main__inner loses position:relative
+   so the abs-pos .header-nav climbs to .site-header and escapes overflow:hidden.
+   Desktop only: below 1024px the nav is replaced by the burger, which lives in
+   header-main, so collapsing it there would hide the menu button. */
+@media (min-width: 1025px) {
+  .site-header .header-main {
+    overflow: hidden;
+    max-height: var(--nav-h);
+    transition: max-height 0.4s var(--ease);
+  }
+  .site-header.is-compact .header-main {
+    max-height: 0;
+  }
+  .site-header.is-compact .header-main__inner {
+    position: static;
+  }
+  .site-header.is-compact .header-nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--util-h);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    gap: 2.4rem;
+  }
+}
+
+/* Home link only in the compact bar (the logo handles it at the top) */
+.nav-home {
+  display: none;
+}
+.site-header.is-compact .nav-home {
+  display: inline;
+}
+
 /* Mega menu */
 .nav-item {
   position: relative;
