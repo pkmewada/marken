@@ -8,6 +8,14 @@ RewriteEngine On
 RewriteCond %{THE_REQUEST} \s/([^\s?]*?)products(?:\.html)?\?category=([^&\s]+)\s [NC]
 RewriteRule ^ /%1products/%2? [R=301,L]
 
+# Old article links (blog-details?slug=x, blog-details.html?slug=x) → /blog-details/x (301).
+# Only when slug is the sole parameter, so admin previews (?slug=x&preview=1) are never redirected.
+RewriteCond %{THE_REQUEST} \s/([^\s?]*?)blog-details(?:\.html)?\?slug=([^&\s]+)\s [NC]
+RewriteRule ^ /%1blog-details/%2? [R=301,L]
+
+# Clean article URLs: /blog-details/slug → blog-details.html?slug=slug
+RewriteRule ^blog-details/([^/]+)/?$ blog-details.html?slug=$1 [L,QSA]
+
 # Clean product-detail URLs: /product-details/slug → product-details.html?slug=slug
 RewriteRule ^product-details/([^/]+)/?$ product-details.html?slug=$1 [L,QSA]
 

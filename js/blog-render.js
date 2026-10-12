@@ -24,7 +24,7 @@ async function fetchBlog(params = {}) {
 
 function blogCardHTML(post) {
   return `
-    <a href="blog-details.html?slug=${encodeURIComponent(post.slug)}" class="blog-card reveal">
+    <a href="blog-details/${encodeURIComponent(post.slug)}" class="blog-card reveal">
       <div class="blog-card__frame">
         <img src="${escBlog(post.image)}" alt="${escBlog(post.title)}" loading="lazy" />
       </div>

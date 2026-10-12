@@ -1,5 +1,16 @@
 const blogUrlParams = new URLSearchParams(window.location.search);
-const blogSlug = blogUrlParams.get("slug") || "";
+// Support /blog-details/slug (clean URL) and legacy ?slug= query param
+const _blogPathSlug = window.location.pathname.split("/blog-details/")[1]?.replace(/\/$/, "");
+const blogSlug = decodeURIComponent(_blogPathSlug || blogUrlParams.get("slug") || "");
+
+// The page's <base> points at the site root, so in-page "#section" links (footer, article body)
+// must be pinned to the current URL or they would jump to the homepage.
+function pinAnchorLinks(scope = document) {
+  scope.querySelectorAll('a[href^="#"]:not([href="#"])').forEach((a) => {
+    a.href = window.location.pathname + window.location.search + a.getAttribute("href");
+  });
+}
+pinAnchorLinks();
 
 function revealInjected() {
   // Re-run reveal observer for content injected after main.js already ran
@@ -64,6 +75,7 @@ function renderBlogPost(post, related) {
 
   // Body — sanitized server-side (app/html-sanitizer.php) to an allowlist of tags/attributes.
   document.getElementById("bd-body").innerHTML = post.content;
+  pinAnchorLinks(document.getElementById("bd-body"));
 
   // CTA — link to the related product if this post has one
   const ctaLink = document.getElementById("bd-cta-link");

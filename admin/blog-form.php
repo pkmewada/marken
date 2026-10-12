@@ -108,7 +108,7 @@ $isEdit        = $id > 0;
 $action        = $isEdit ? 'blogs/edit/' . rawurlencode($editSlug) : 'blogs/new';
 $pageTitle     = $isEdit ? 'Edit Blog Post' : 'Add Blog Post';
 $pageActive    = 'blogs';
-$topbarActions = ($isEdit ? '<a href="../blog-details?slug=' . h(rawurlencode($editSlug)) . '&amp;preview=1" target="_blank" rel="noopener" class="btn btn-outline-secondary btn-sm"><i class="bi bi-eye me-1"></i>Preview</a>' : '')
+$topbarActions = ($isEdit ? '<a href="../blog-details/' . h(rawurlencode($editSlug)) . '?preview=1" target="_blank" rel="noopener" class="btn btn-outline-secondary btn-sm"><i class="bi bi-eye me-1"></i>Preview</a>' : '')
                . '<a href="blogs" class="btn btn-outline-secondary btn-sm">Cancel</a>'
                . '<button type="submit" form="blogForm" class="btn btn-dark btn-sm"><i class="bi bi-check-lg me-1"></i>'
                . ($isEdit ? 'Update' : 'Save') . ' Post</button>';
@@ -138,7 +138,7 @@ include __DIR__ . '/includes/layout-top.php';
             <input type="text" id="blogSlug" name="slug" class="form-control font-monospace<?= invalid($errors, 'slug') ?>"
                    value="<?= h($b['slug']) ?>" maxlength="150" required
                    placeholder="e.g. alarm-systems-cold-chain (auto-filled from the title)">
-            <?= fieldError($errors, 'slug') ?: '<div class="form-text">Article URL: <code>/blog-details?slug=slug</code> — changing it breaks links already shared.</div>' ?>
+            <?= fieldError($errors, 'slug') ?: '<div class="form-text">Article URL: <code>/blog-details/slug</code> — changing it breaks links already shared.</div>' ?>
           </div>
           <div>
             <label class="form-label small fw-semibold" for="blogExcerpt">Excerpt <span class="text-danger">*</span></label>

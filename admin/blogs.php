@@ -88,7 +88,7 @@ include __DIR__ . '/includes/layout-top.php';
           <td><span class="badge badge-<?= $status === 'scheduled' ? 'new' : h($b['status']) ?>"><?= h(ucfirst($status)) ?></span></td>
           <td class="small text-muted text-nowrap" data-sort-value="<?= h($b['updatedAt']) ?>"><?= h(date('d M Y', strtotime($b['updatedAt']))) ?></td>
           <td class="text-end text-nowrap">
-            <a href="../blog-details?slug=<?= h(rawurlencode($b['slug'])) ?><?= $isLive ? '' : '&amp;preview=1' ?>" target="_blank" rel="noopener"
+            <a href="../blog-details/<?= h(rawurlencode($b['slug'])) ?><?= $isLive ? '' : '?preview=1' ?>" target="_blank" rel="noopener"
                class="btn btn-sm btn-outline-secondary" title="<?= $isLive ? 'View on site' : 'Preview (only visible to you)' ?>"><i class="bi bi-<?= $isLive ? 'box-arrow-up-right' : 'eye' ?>"></i></a>
             <a href="blogs/edit/<?= h($b['slug']) ?>" class="btn btn-sm btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
             <form method="post" class="d-inline" data-confirm="Delete &quot;<?= h($b['title']) ?>&quot;? This cannot be undone.">
