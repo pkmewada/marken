@@ -133,7 +133,7 @@ include __DIR__ . '/includes/layout-top.php';
             <input type="text" id="catSlug" name="slug" class="form-control font-monospace<?= invalid($errors, 'slug') ?>"
                    value="<?= h($form['slug']) ?>" maxlength="100" required
                    placeholder="e.g. medical-cold-chain (auto-filled from the name)">
-            <?= fieldError($errors, 'slug') ?: '<div class="form-text">Used in <code>products?category=slug</code>.</div>' ?>
+            <?= fieldError($errors, 'slug') ?: '<div class="form-text">Used in <code>products/slug</code>.</div>' ?>
           </div>
           <div class="mb-3">
             <label class="form-label small fw-semibold" for="catTagline">Tagline</label>

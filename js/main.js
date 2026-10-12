@@ -70,7 +70,7 @@ if (megaGrid || mobileCats) {
       const link = (cat, className) => {
         const a = document.createElement("a");
         if (className) a.className = className;
-        a.href = `products.html?category=${encodeURIComponent(cat.slug)}`;
+        a.href = `products/${encodeURIComponent(cat.slug)}`;
         return a;
       };
       if (megaGrid) {

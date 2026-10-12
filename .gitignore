@@ -15,6 +15,9 @@ dist-ssr
 # Runtime state written by the PHP app
 app/.schema-version
 
+# Per-server credentials (DB, SMTP, admin). Copy app/config.example.php to create it.
+app/config.php
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

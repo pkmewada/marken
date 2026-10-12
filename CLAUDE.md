@@ -31,7 +31,8 @@ css/
   blog-details.css            blog-details.html-only
   product-details.css         product-details.html-only (also overrides the shared hero for this page, see §8)
 app/                         Shared PHP (denied over HTTP by app/.htaccess)
-  config.php                 DB credentials, admin user + bcrypt hash, upload settings
+  config.php                 DB credentials, admin user + bcrypt hash, upload settings — gitignored, per-server;
+                             config.example.php is the committed template (add new settings to both)
   db.php                     db() PDO singleton (auto-installs on missing DB), dbOne/dbAll/dbRun, toJson/fromJson
   schema.php                 installDatabase() + migrateSchema() (idempotent). db() runs migrateSchema() once whenever
                              app/.schema-version (gitignored) differs from SCHEMA_VERSION in db.php — bump it when adding tables/columns
@@ -97,7 +98,7 @@ No modules, no bundler — plain global-scope scripts loaded in `<script>` tags 
 - **`api/catalog.php` → `data.js`** (products, product-details, blog-details): `api/catalog.php` is loaded as a `<script>` and defines the `CATEGORIES` and `PRODUCTS` globals from MySQL (product keys: `slug`, `name`, `category`, `image`, `featured`, `description`, `fullDescription`, `gallery`, `features`, `applications`, `specifications`, `certifications`, `documents`, `metaTitle`, `metaDescription` — empty fields are omitted). `data.js` then defines `getCategory()`, `getProduct()`, `getProductsByCategory()`, `getRelatedProducts()`. Draft products are never emitted.
 - **`blog-data.js`** (index, blog, blog-details): hardcoded `BLOG_CATEGORIES` and `BLOG_POSTS` arrays plus `getBlogCategory()`, `getBlogPost()`, `getRelatedBlogPosts()`, `formatBlogDate()`.
 - **`blog-render.js`** (index, blog, blog-details): the single shared `blogCardHTML(post)` template function used everywhere a blog card is rendered.
-- **`products-page.js`** (products.html only): reads `?category=` from the URL, renders/filters `.products-grid` client-side, syncs category/search state back into the URL via `history.replaceState`.
+- **`products-page.js`** (products.html only): renders the category filter buttons from `CATEGORIES` (only "All Products" is static in the HTML), reads the category from the clean URL `/products/{slug}` (legacy `?category=` still read), renders/filters `.products-grid` client-side, and writes `products` / `products/{slug}` back via `history.replaceState`, resolved against `document.baseURI`. Root `.htaccess` rewrites `/products/{slug}` → `products.html?category=` and 301s old `products(.html)?category=x` links to the clean URL. Like product-details.html, products.html writes a `<base href>` at the site root as the first thing in `<head>` (the clean URL adds a path segment) and the script re-points `#anchor` links. All category links site-wide use `products/{slug}` (relative to the root).
 - **`blog-listing.js`** (blog.html only): same pattern as `products-page.js` but for `BLOG_POSTS`.
 - **`blog-details.js`** (blog-details.html only): reads `?slug=`, redirects to `blog.html` if not found, otherwise populates breadcrumb/title/meta/body/CTA/related-articles and injects a `BlogPosting` JSON-LD block. Re-runs a fresh `IntersectionObserver` over freshly-injected `.reveal` elements (main.js's own observer already ran before this content existed).
 - **`product-details.js`** (product-details.html only): reads `?slug=`, redirects to `products.html` if not found, otherwise populates hero/breadcrumb/media-slider/applications/certifications/documentation-links/FAQ. Also re-runs its own `IntersectionObserver` for the same "content injected after main.js ran" reason.
@@ -199,7 +200,7 @@ No modules, no bundler — plain global-scope scripts loaded in `<script>` tags 
 ## 10. Development Conventions
 
 - Plain HTML/CSS/JS, no build step — edit files directly, refresh the browser.
-- Cache-busting via `?v=2` query strings on every `<link>`/`<script>` tag referencing `css/`/`js/` files — bump this manually (repo-wide, since it's hardcoded per tag) when a change needs to force-refresh cached assets for returning visitors.
+- Cache-busting via `?v=NNNN` query strings (currently `?v=2160`, one shared value) on every `<link>`/`<script>` tag referencing `css/`/`js/` files — bump it repo-wide on **every deploy that changes CSS/JS**: the live host (Hostinger, hyther.in/marken) serves assets with `Cache-Control: max-age=604800` (7 days), so an unbumped file keeps returning visitors on the old version (local WAMP doesn't cache, which hides this).
 - BEM-ish naming with page-scoped prefixes: `pd-` (product-details), `bd-` (blog-details), `vs-` (homepage vertical slider), unprefixed for genuinely shared components (`.site-header`, `.site-footer`, `.btn`, `.product-card`, `.blog-card`).
 - Header/mobile-menu/footer markup is intentionally copy-pasted into every HTML file (no templating system exists) — any edit to shared chrome must be manually replicated across all 5 HTML files or pages will visually diverge.
 - Product/category data lives in MySQL and is edited through the admin panel. Blog posts still live in `blog-data.js`. To change the *initial* seed catalogue, edit `app/schema.php`.

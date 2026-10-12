@@ -39,7 +39,7 @@ if (!product) {
 
   // Breadcrumb
   document.getElementById("pd-breadcrumb-category").textContent = category.name;
-  document.getElementById("pd-breadcrumb-category").href = `products.html?category=${category.slug}`;
+  document.getElementById("pd-breadcrumb-category").href = `products/${encodeURIComponent(category.slug)}`;
   document.getElementById("pd-breadcrumb-name").textContent = product.name;
 
   // Hero

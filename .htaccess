@@ -3,8 +3,16 @@
 Options -Indexes -MultiViews
 RewriteEngine On
 
+# Old category links (products?category=slug, products.html?category=slug) → /products/slug (301).
+# Captures from THE_REQUEST so the site's sub-folder (e.g. /marken/) is kept.
+RewriteCond %{THE_REQUEST} \s/([^\s?]*?)products(?:\.html)?\?category=([^&\s]+)\s [NC]
+RewriteRule ^ /%1products/%2? [R=301,L]
+
 # Clean product-detail URLs: /product-details/slug → product-details.html?slug=slug
 RewriteRule ^product-details/([^/]+)/?$ product-details.html?slug=$1 [L,QSA]
+
+# Clean category URLs: /products/slug → products.html?category=slug
+RewriteRule ^products/([^/]+)/?$ products.html?category=$1 [L,QSA]
 
 # Remove .html extension from flat pages (e.g. /products → /products.html)
 RewriteCond %{REQUEST_FILENAME} !-d
