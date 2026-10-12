@@ -9,12 +9,12 @@
     content="MarkEn — precision-engineered medical cold chain, blood bank, hospital furniture and critical care technology, trusted by 20,000+ healthcare institutions worldwide."
   />
   <title>MarkEn | Precision Medical Technology</title>
-  <link rel="stylesheet" href="css/base.css?v=2160" />
-  <link rel="stylesheet" href="css/header.css?v=2160" />
-  <link rel="stylesheet" href="css/hero.css?v=2160" />
-  <link rel="stylesheet" href="css/home.css?v=2160" />
-  <link rel="stylesheet" href="css/blog.css?v=2160" />
-  <link rel="stylesheet" href="css/footer.css?v=2160" />
+  <link rel="stylesheet" href="css/base.css?v=2161" />
+  <link rel="stylesheet" href="css/header.css?v=2161" />
+  <link rel="stylesheet" href="css/hero.css?v=2161" />
+  <link rel="stylesheet" href="css/home.css?v=2161" />
+  <link rel="stylesheet" href="css/blog.css?v=2161" />
+  <link rel="stylesheet" href="css/footer.css?v=2161" />
   <style>
     /* vertical slider – placed after Our Story section */
     .vertical-slider-section {
@@ -962,9 +962,8 @@
 
     })();
   </script>
-  <script src="js/blog-data.js?v=2160"></script>
-  <script src="js/blog-render.js?v=2160"></script>
-  <script src="js/main.js?v=2160"></script>
+  <script src="js/blog-render.js?v=2161"></script>
+  <script src="js/main.js?v=2161"></script>
   <script>
     document.querySelectorAll(".cert-card").forEach((card) => {
       const desc = card.querySelector(".cert-card__desc");
@@ -1001,17 +1000,20 @@
     });
   </script>
   <script>
-    document.getElementById("home-blog-grid").innerHTML = getFeaturedBlogPosts(3).map(blogCardHTML).join("");
-    document.querySelectorAll("#home-blog-grid .reveal").forEach((el) => {
-      new IntersectionObserver((entries, obs) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-visible");
-            obs.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.15, rootMargin: "0px 0px -8% 0px" }).observe(el);
-    });
+    // Featured posts first, then the newest (api/blog.php). On failure the section just stays empty.
+    fetchBlog({ featured: 1, limit: 3 }).then(({ posts }) => {
+      document.getElementById("home-blog-grid").innerHTML = posts.map(blogCardHTML).join("");
+      document.querySelectorAll("#home-blog-grid .reveal").forEach((el) => {
+        new IntersectionObserver((entries, obs) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              obs.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15, rootMargin: "0px 0px -8% 0px" }).observe(el);
+      });
+    }).catch((err) => console.error(err));
   </script>
 </body>
 </html>

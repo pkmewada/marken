@@ -109,6 +109,17 @@ body { background: #f4f6f9; }
 .gallery-item img { width: 100%; height: 100%; object-fit: contain; }
 .gallery-item .btn-close { position: absolute; top: 4px; right: 4px; background-color: #fff; padding: .3rem; font-size: .6rem; }
 
+/* Blog rich-text editor (blog-form.php) */
+.blog-editor { border: 1px solid #ced4da; border-radius: .375rem; overflow: hidden; }
+.blog-editor__toolbar { padding: .5rem; background: #f8f9fa; border-bottom: 1px solid #e9ecef; }
+.blog-editor__area { min-height: 360px; max-height: 70vh; overflow-y: auto; padding: 1rem 1.25rem; line-height: 1.7; outline: 0; }
+.blog-editor__area:empty::before { content: attr(data-placeholder); color: #adb5bd; }
+.blog-editor__area h2 { font-size: 1.35rem; margin: 1.5rem 0 .75rem; }
+.blog-editor__area h3 { font-size: 1.1rem; margin: 1.25rem 0 .5rem; }
+.blog-editor__area blockquote { border-left: 3px solid var(--mk-navy); padding-left: 1rem; font-style: italic; }
+.blog-editor__area img { max-width: 100%; height: auto; }
+.blog-editor__source { border: 0; border-radius: 0; font-size: .8rem; }
+
 /* Login */
 .login-body { background: var(--mk-navy); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
 .login-box { width: 100%; max-width: 400px; padding: 1rem; }

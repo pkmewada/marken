@@ -111,6 +111,11 @@ function validate(array $data, array $rules): array {
     return $errors;
 }
 
+// Only site-relative asset paths or http(s)/mailto links — blocks javascript: and similar.
+function isSafeLink(string $v): bool {
+    return (bool)preg_match('#^(https?://|mailto:|(uploads|images|documents)/)[^\s<>"\']*$#i', $v);
+}
+
 /** Bootstrap invalid class + message for a field. */
 function fieldError(array $errors, string $field): string {
     return isset($errors[$field]) ? '<div class="invalid-feedback">' . h($errors[$field]) . '</div>' : '';

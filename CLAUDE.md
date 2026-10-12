@@ -9,7 +9,7 @@ MarkEn is a B2B medical-equipment manufacturer (cold chain, blood bank, hospital
 - Runs on Apache + PHP 8.1+ + MySQL (WAMP locally). `mod_rewrite` and `.htaccess` must be enabled.
 - **The database creates itself**: the first request that calls `db()` (`app/db.php`) and finds `marken_admin` missing runs `installDatabase()` from `app/schema.php`, which creates the DB and tables and seeds the original 4 categories + 24 products. No install step is needed.
 - `package.json` only holds **dev-only** tooling (`sharp`, `ffmpeg-static`) for one-off asset generation (`npm run optimize-images`, `npm run generate-hero-video`) — irrelevant to how the site runs in a browser.
-- **Products/categories live in MySQL** and are served to the front-end by `api/catalog.php`. Blog content is still hardcoded in `js/blog-data.js`.
+- **Products/categories live in MySQL** and are served to the front-end by `api/catalog.php`. **Blog posts/blog categories also live in MySQL** (`blogs`, `blogCategories`) and are served as JSON by `api/blog.php` — see §15. `js/blog-data.js` is the legacy static data, no longer loaded by any page.
 - "Forms" (contact, newsletter, quote/enquiry/document requests) have no server: they build `mailto:` links or a `wa.me` (WhatsApp) link client-side. There is no cart, checkout, or payment flow anywhere on the site — it's lead-generation, not e-commerce.
 
 ## 2. Repository Structure
@@ -38,8 +38,11 @@ app/                         Shared PHP (denied over HTTP by app/.htaccess)
                              app/.schema-version (gitignored) differs from SCHEMA_VERSION in db.php — bump it when adding tables/columns
   mailer.php                 sendMail($to, $subject, $html, $attachments) — MIME + minimal SMTP client (falls back to mail())
   public-api.php             Shared guards for public form endpoints: readPublicForm(), emailError(), rateLimit(), jsonOut()
+  html-sanitizer.php         sanitizeHtml() allowlist sanitizer for blog rich text (DOMDocument) + isSafeUrl()
+  blog-seed.php / .json      importBlogSeed(): idempotent import of the original static posts (blog-seed.json = exact export of js/blog-data.js)
 api/
   catalog.php                Emits `const CATEGORIES = …; const PRODUCTS = …;` as JavaScript (published products only)
+  blog.php                   Blog JSON: list (published cards + active categories), ?slug= single post + related, admin ?preview=1
   categories.php             JSON category list for the header mega menu / mobile menu
   document-request.php       Product page doc cards → emails the document (attached if uploaded) + logs to documentRequests
   enquiry.php                Homepage contact form → enquiries
@@ -48,9 +51,9 @@ admin/                       PHP admin panel — see §13
 uploads/                     Files uploaded from the admin (script execution denied by uploads/.htaccess)
 js/
   main.js                    Shared: header scroll-solid toggle, mega menu, mobile menu, .reveal animation, homepage collage carousel, newsletter form — loaded on every page
-  data.js                    Helper functions only (getProduct/getCategory/etc.) over the globals from api/catalog.php — loaded by products, product-details, blog-details, always AFTER api/catalog.php
-  blog-data.js                Shared BLOG_POSTS/BLOG_CATEGORIES + helpers — loaded by index, blog, blog-details
-  blog-render.js              Shared blogCardHTML() template — loaded wherever blog cards render
+  data.js                    Helper functions only (getProduct/getCategory/etc.) over the globals from api/catalog.php — loaded by products, product-details, always AFTER api/catalog.php
+  blog-data.js                LEGACY static blog data — not loaded anywhere since the blog moved to MySQL; kept until the client confirms, safe to delete
+  blog-render.js              Shared blog helpers: fetchBlog(), blogCardHTML(), formatBlogDate(), escBlog() — loaded by index, blog, blog-details
   products-page.js            products.html-only: renders/filters the product grid
   blog-listing.js             blog.html-only: renders/filters the blog grid
   blog-details.js             blog-details.html-only: renders one article from ?slug=, builds JSON-LD
@@ -63,6 +66,7 @@ videos/hero.mp4               Homepage hero video (generated from product stills
 scripts/                      Dev-only Node tooling (not shipped to the browser)
   generate-hero-video.mjs     Builds videos/hero.mp4 + images/hero-poster.jpg from product stills via ffmpeg
   optimize-images.mjs         Batch-converts png/jpg in images/ to resized .webp via sharp
+  import-blog.php             CLI only (`php scripts/import-blog.php`): reruns importBlogSeed() and prints a report
 favicon.svg
 ```
 
@@ -95,12 +99,11 @@ Every page loads `css/base.css`, `css/header.css`, `css/footer.css`, plus its ow
 No modules, no bundler — plain global-scope scripts loaded in `<script>` tags at the bottom of `<body>`, relying on load order for shared globals.
 
 - **`main.js`** (every page): header scroll-solid toggle (adds `.is-solid` to `.site-header` once `window.scrollY > 40`, or immediately if the page has no `.hero`), mega-menu hover-to-open, mobile menu open/close, **header categories** (fetches `api/categories.php` and rebuilds `.mega-menu__grid` and `.mobile-menu__categories` from the DB; inserts an `hr.mega-menu__divider` before every new row of 4; the hardcoded category links in each HTML file are only a fallback if the request fails), a generic `IntersectionObserver` that adds `.is-visible` to `.reveal` elements present at initial load, the homepage "our story" collage carousel (guarded — no-ops if `.collage__nav` isn't present), and the newsletter form handler (guarded similarly).
-- **`api/catalog.php` → `data.js`** (products, product-details, blog-details): `api/catalog.php` is loaded as a `<script>` and defines the `CATEGORIES` and `PRODUCTS` globals from MySQL (product keys: `slug`, `name`, `category`, `image`, `featured`, `description`, `fullDescription`, `gallery`, `features`, `applications`, `specifications`, `certifications`, `documents`, `metaTitle`, `metaDescription` — empty fields are omitted). `data.js` then defines `getCategory()`, `getProduct()`, `getProductsByCategory()`, `getRelatedProducts()`. Draft products are never emitted.
-- **`blog-data.js`** (index, blog, blog-details): hardcoded `BLOG_CATEGORIES` and `BLOG_POSTS` arrays plus `getBlogCategory()`, `getBlogPost()`, `getRelatedBlogPosts()`, `formatBlogDate()`.
-- **`blog-render.js`** (index, blog, blog-details): the single shared `blogCardHTML(post)` template function used everywhere a blog card is rendered.
+- **`api/catalog.php` → `data.js`** (products, product-details): `api/catalog.php` is loaded as a `<script>` and defines the `CATEGORIES` and `PRODUCTS` globals from MySQL (product keys: `slug`, `name`, `category`, `image`, `featured`, `description`, `fullDescription`, `gallery`, `features`, `applications`, `specifications`, `certifications`, `documents`, `metaTitle`, `metaDescription` — empty fields are omitted). `data.js` then defines `getCategory()`, `getProduct()`, `getProductsByCategory()`, `getRelatedProducts()`. Draft products are never emitted.
+- **`blog-render.js`** (index, blog, blog-details): `fetchBlog(params)` (GET `api/blog.php`, throws `Error` with `.status` and a user-facing message), the shared `blogCardHTML(post)` card template (escapes every field via `escBlog()`), and `formatBlogDate()`. The homepage grid (inline script in index.html) calls `fetchBlog({ featured: 1, limit: 3 })`.
 - **`products-page.js`** (products.html only): renders the category filter buttons from `CATEGORIES` (only "All Products" is static in the HTML), reads the category from the clean URL `/products/{slug}` (legacy `?category=` still read), renders/filters `.products-grid` client-side, and writes `products` / `products/{slug}` back via `history.replaceState`, resolved against `document.baseURI`. Root `.htaccess` rewrites `/products/{slug}` → `products.html?category=` and 301s old `products(.html)?category=x` links to the clean URL. Like product-details.html, products.html writes a `<base href>` at the site root as the first thing in `<head>` (the clean URL adds a path segment) and the script re-points `#anchor` links. All category links site-wide use `products/{slug}` (relative to the root).
-- **`blog-listing.js`** (blog.html only): same pattern as `products-page.js` but for `BLOG_POSTS`.
-- **`blog-details.js`** (blog-details.html only): reads `?slug=`, redirects to `blog.html` if not found, otherwise populates breadcrumb/title/meta/body/CTA/related-articles and injects a `BlogPosting` JSON-LD block. Re-runs a fresh `IntersectionObserver` over freshly-injected `.reveal` elements (main.js's own observer already ran before this content existed).
+- **`blog-listing.js`** (blog.html only): fetches all published cards + active categories once from `api/blog.php`, renders the category buttons (only "All Articles" is static in the HTML), then filters/searches client-side; `?category=` is read and written via `history.replaceState`. Loading/empty/error messages reuse the `.blog-empty` paragraph.
+- **`blog-details.js`** (blog-details.html only): reads `?slug=` (and `?preview=1`), fetches that one post from `api/blog.php?slug=`, populates breadcrumb/title/meta (metaTitle → title fallback, metaDescription → excerpt)/author/cover/body (server-sanitized HTML)/CTA (related product, or "Make an Enquiry")/related articles, and injects a `BlogPosting` JSON-LD block. A 404 renders an in-page "Article not found" state with `noindex` and the 3 latest posts (no redirect). Re-runs a fresh `IntersectionObserver` over freshly-injected `.reveal` elements (main.js's own observer already ran before this content existed).
 - **`product-details.js`** (product-details.html only): reads `?slug=`, redirects to `products.html` if not found, otherwise populates hero/breadcrumb/media-slider/applications/certifications/documentation-links/FAQ. Also re-runs its own `IntersectionObserver` for the same "content injected after main.js ran" reason.
 - **Exception to the "external JS only" pattern**: `index.html` has three inline `<script>` blocks — the vertical slider's wheel/touch/keyboard logic, the cert-card accordion + contact form handler, and the homepage blog-grid render call. These exist only in index.html's markup, not in `js/`.
 
@@ -116,7 +119,7 @@ No modules, no bundler — plain global-scope scripts loaded in `<script>` tags 
 | Buttons (`.btn`, `.btn-dark`, `.btn-light`, `.btn-fill`) | n/a (utility classes) | `base.css` | none |
 | Product card (`.product-card`) | Rendered via `productCardHTML()` in `products-page.js` | `products.css` | click → `product-details.html?slug=` |
 | Product card, mini variant (`.product-card-mini`) | Hardcoded once, inline in index.html's featured section | `home.css` | none — not reused elsewhere |
-| Blog card (`.blog-card`) | Rendered via shared `blogCardHTML()` in `blog-render.js` | `blog.css` | click → `blog-details.html?slug=` |
+| Blog card (`.blog-card`) | Rendered via shared `blogCardHTML()` in `blog-render.js` from `api/blog.php` data | `blog.css` | click → `blog-details.html?slug=` |
 | Scroll-reveal (`.reveal`) | Applied as a class on many elements across all pages | `base.css` | `IntersectionObserver` in `main.js`, re-run per-page for late-injected content (see §5) |
 
 ## 7. Product Details Page (`product-details.html`)
@@ -200,10 +203,10 @@ No modules, no bundler — plain global-scope scripts loaded in `<script>` tags 
 ## 10. Development Conventions
 
 - Plain HTML/CSS/JS, no build step — edit files directly, refresh the browser.
-- Cache-busting via `?v=NNNN` query strings (currently `?v=2160`, one shared value) on every `<link>`/`<script>` tag referencing `css/`/`js/` files — bump it repo-wide on **every deploy that changes CSS/JS**: the live host (Hostinger, hyther.in/marken) serves assets with `Cache-Control: max-age=604800` (7 days), so an unbumped file keeps returning visitors on the old version (local WAMP doesn't cache, which hides this).
+- Cache-busting via `?v=NNNN` query strings (currently `?v=2161`, one shared value; the admin's own `assets/admin.css`/`admin.js` have separate `?v=` numbers in `layout-top.php`/`layout-bottom.php`) on every `<link>`/`<script>` tag referencing `css/`/`js/` files — bump it repo-wide on **every deploy that changes CSS/JS**: the live host (Hostinger, hyther.in/marken) serves assets with `Cache-Control: max-age=604800` (7 days), so an unbumped file keeps returning visitors on the old version (local WAMP doesn't cache, which hides this).
 - BEM-ish naming with page-scoped prefixes: `pd-` (product-details), `bd-` (blog-details), `vs-` (homepage vertical slider), unprefixed for genuinely shared components (`.site-header`, `.site-footer`, `.btn`, `.product-card`, `.blog-card`).
 - Header/mobile-menu/footer markup is intentionally copy-pasted into every HTML file (no templating system exists) — any edit to shared chrome must be manually replicated across all 5 HTML files or pages will visually diverge.
-- Product/category data lives in MySQL and is edited through the admin panel. Blog posts still live in `blog-data.js`. To change the *initial* seed catalogue, edit `app/schema.php`.
+- Product/category data and blog posts/blog categories live in MySQL and are edited through the admin panel. To change the *initial* seed catalogue, edit `app/schema.php`; the initial blog seed is `app/blog-seed.json`.
 - Contact form, footer newsletter and product document requests POST to `api/*.php` (see §14). The hero CTAs (Request a Quote / Enquire Now / WhatsApp) are still `mailto:`/`wa.me` links.
 - Source comments in this codebase explain **why**, not what (e.g. the hero.css pinned-hero comment, the product-details.css `object-fit` rationale, the `optimize-images.mjs`/`generate-hero-video.mjs` asset-choice comments) — match that style for any new non-obvious code.
 
@@ -212,7 +215,8 @@ No modules, no bundler — plain global-scope scripts loaded in `<script>` tags 
 - **`.site-header` rules in `header.css` affect all 5 pages.** Any change to header position, sizing, or stacking affects the whole site, not just one page.
 - **`.hero` / `.hero-spacer` / `.page-wrap` rules in `hero.css` affect both index.html and product-details.html identically** — these are the only two pages that load `hero.css`, and they share those exact class names with no scoping. A change meant only for product-details.html (like the upcoming header/hero separation) must not edit these shared selectors directly — see the scoping approach described in §8.
 - **`main.js`'s `hasHero` check** (`!!document.querySelector(".hero")`) determines whether the header starts transparent or always-solid on load. If a future change renames `.hero` or removes it from a page without updating this check's assumptions, the header's transparent-over-hero behavior could silently break.
-- **`api/catalog.php` + `data.js` and `blog-data.js` are multi-page dependencies.** The catalog pair is consumed by products.html, product-details.html, and blog-details.html (for the related-product CTA link), in that script order; `blog-data.js` is consumed by index.html, blog.html, and blog-details.html. Renaming or removing any exported helper (`getProduct`, `getCategory`, `getProductsByCategory`, `getRelatedProducts`, `getBlogPost`, `getBlogCategory`, `getRelatedBlogPosts`, `formatBlogDate`) requires checking every consumer.
+- **`api/catalog.php` + `data.js` and `blog-render.js` are multi-page dependencies.** The catalog pair is consumed by products.html and product-details.html, in that script order (blog-details.html no longer loads it — `api/blog.php` resolves the related product server-side); `blog-render.js` is consumed by index.html, blog.html, and blog-details.html. Renaming or removing any exported helper (`getProduct`, `getCategory`, `getProductsByCategory`, `getRelatedProducts`, `fetchBlog`, `blogCardHTML`, `formatBlogDate`, `escBlog`) requires checking every consumer.
+- **Table-name case**: local WAMP MySQL runs with `lower_case_table_names=1` (Windows), so `blogCategories` is stored as `blogcategories` and wrong-case SQL still works locally. Linux hosting is case-sensitive — always write the exact camelCase table names.
 - **Footer markup differs slightly per page** (which element carries `id="contact"`, and product-details.html nests its footer one level deeper inside `.page-wrap`) — don't assume a straight copy-paste of one page's footer onto another without checking anchor links (`#contact`) still resolve correctly.
 - **index.html has inline `<style>`/`<script>` blocks** not mirrored in `css/`/`js/` (the vertical-slider CSS, and three inline scripts) — changes to homepage-only behavior may need to happen inside index.html itself, not in the shared files.
 
@@ -223,12 +227,16 @@ PHP + MySQL, Bootstrap 5.3.2 + Bootstrap Icons from `cdn.jsdelivr.net` (no SRI h
 ```
 admin/
   .htaccess          -MultiViews; /admin/page → page.php; GET /admin/page.php → 301 /admin/page;
-                     products/new, products/edit/{slug} → product-form.php; categories/edit/{slug} → categories.php
+                     products/new, products/edit/{slug} → product-form.php; categories/edit/{slug} → categories.php;
+                     blogs/new, blogs/edit/{slug} → blog-form.php; blog-categories/edit/{slug} → blog-categories.php
   index.php          Redirects to products or login
   login.php / logout.php
   products.php       List (search, category filter, sort, pagination) + delete
   product-form.php   Create (/admin/products/new) and edit (/admin/products/edit/{slug}) — looked up by slug, no ids in URLs
   categories.php     List + inline create/edit (/admin/categories/edit/{slug}); delete is blocked while products use the category; renaming a slug re-points its products
+  blogs.php          "Blog Posts" list (search, category + status filters incl. Scheduled, sort, pagination), preview/view, delete — see §15
+  blog-form.php      Create (/admin/blogs/new) and edit (/admin/blogs/edit/{slug}) with the built-in rich-text editor
+  blog-categories.php  List + inline create/edit (/admin/blog-categories/edit/{slug}): description, active flag, display order, post count; delete blocked while posts use it
   enquiries.php      "Contact Enquiries": list, status change, delete (filled by the homepage contact form)
   document-requests.php  Product document leads (email, product, document, mail status) + CSV export
   newsletter.php     Footer newsletter subscribers + CSV export
@@ -236,12 +244,13 @@ admin/
                      PHP's 2 MB default is raised for admin/ only: admin/.user.ini (FastCGI — WAMP runs PHP via
                      mod_fcgid, which ignores php_value) and an <IfModule mod_php.c> block in admin/.htaccess
   includes/          auth.php (session, CSRF, validation, helpers), layout-top.php, layout-bottom.php — denied over HTTP
-  assets/            admin.css, admin.js (table engine, drop-zone uploads, slug autofill, delete confirm)
+  assets/            admin.css, admin.js (table engine, drop-zone uploads, slug autofill, delete confirm).
+                     Table filters: `<select data-table-filter>` matches `<tr data-filter>`; `data-table-filter="status"` matches `<tr data-status>` (any number of filters)
 ```
 
-- **DB tables** (camelCase columns): `categories` (id, slug, name, tagline, image, sortOrder, createdAt, updatedAt), `products` (id, slug, name, categorySlug, status `published|draft`, featured, image, heroMediaType `image|video`, heroMedia, gallery/features/applications/specifications/certifications/documents as JSON, description, fullDescription, metaTitle, metaDescription, sortOrder, createdAt, updatedAt), `enquiries` (id, name, email, phone, subject, message, status `new|replied|closed`, createdAt).
+- **DB tables** (camelCase columns): `categories` (id, slug, name, tagline, image, sortOrder, createdAt, updatedAt), `products` (id, slug, name, categorySlug, status `published|draft`, featured, image, heroMediaType `image|video`, heroMedia, gallery/features/applications/specifications/certifications/documents as JSON, description, fullDescription, metaTitle, metaDescription, sortOrder, createdAt, updatedAt), `enquiries` (id, name, email, phone, subject, message, status `new|replied|closed`, createdAt), plus `blogCategories` / `blogs` (see §15).
 - **Page pattern**: `require includes/auth.php` → `requireLogin()` → handle POST (`verifyCsrf()` first, validate, PRG redirect with `setFlash()`) → set `$pageTitle`/`$pageActive`/`$topbarActions` → include `layout-top.php` → markup → optional `$pageScripts` → include `layout-bottom.php`.
-- **Security**: every POST form includes `csrfField()`; `upload.php` takes the token from the `X-CSRF-Token` header (read from the `csrf-token` meta tag). Every output goes through `h()`. Uploads are typed by `finfo` and the extension comes from the MIME map in `config.php`, never from the client filename. Product links/images must pass `isSafeLink()` (http(s), mailto, or `uploads/` / `images/` paths) so `javascript:` URLs can't reach the public site.
+- **Security**: every POST form includes `csrfField()`; `upload.php` takes the token from the `X-CSRF-Token` header (read from the `csrf-token` meta tag). Every output goes through `h()`. Uploads are typed by `finfo` and the extension comes from the MIME map in `config.php`, never from the client filename. Product and blog links/images must pass `isSafeLink()` (in `includes/auth.php`: http(s), mailto, or `uploads/` / `images/` paths) so `javascript:` URLs can't reach the public site.
 - Links inside admin are extensionless and id-free (`products`, `products/edit/ventilator`) and rely on `admin/.htaccess`. Because routes are nested, `layout-top.php` emits `<base href="<?= adminUrl() ?>">` and `redirect()` builds absolute URLs via `adminUrl()` — keep links relative to the admin root, never `../`-relative to the current page (except `../` for site assets, which resolves from the admin root).
 - Every visible input/textarea carries a descriptive `placeholder` with an example value — keep that for new fields.
 
@@ -257,6 +266,29 @@ admin/
 - **Document resolution is server-side**: the browser sends only product slug + document label. Labels must be one of the 4 standard cards or a document label set on that product in the admin. Files under `uploads/` are attached; `https://` documents are sent as a download button; no file → a "team will send it shortly" email (admin shows "No file uploaded — send manually"). Admin-added labels beyond the standard 4 are rendered as extra cards.
 - **Email delivery** needs SMTP in `app/config.php` (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE` tls|ssl, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`). With `SMTP_HOST` empty it falls back to PHP `mail()`, which fails on a stock WAMP install — the request is still logged with `mailStatus = failed` and the visitor sees "our team will email it shortly".
 
+## 15. Blog System (MySQL + admin)
+
+**Tables** (schema v5, `migrateSchema()` in `app/schema.php`):
+- `blogCategories`: id, name, slug (unique), description, image, isActive, sortOrder, createdAt, updatedAt. Index `(isActive, sortOrder)`.
+- `blogs`: id, categoryId (FK → blogCategories.id, **ON DELETE RESTRICT**), title, slug (unique, ≤150), excerpt, content (MEDIUMTEXT, sanitized HTML), featuredImage, authorName (default "MarkEn Team"), status `published|draft`, featured (homepage), relatedProductId (FK → products.id, ON DELETE SET NULL; drives the article CTA), publishedAt (DATETIME, date-only in the UI → `00:00:00`), metaTitle, metaDescription, createdAt, updatedAt. Indexes: `(status, publishedAt)`, `categoryId`, `relatedProductId`.
+
+**Rules**
+- *Public* = `status = 'published' AND publishedAt <= NOW()` (constant `BLOG_PUBLIC` in `api/blog.php`; `admin/blogs.php` uses the same SQL to show "Scheduled"). Drafts and future-dated posts are never returned without an admin preview.
+- Category **inactive** → hidden from the public filter only; its posts stay listed under "All Articles" and their URLs keep working (breadcrumb then links to `blog.html`). Category **delete** → blocked (UI + FK) while any post uses it; move the posts first. Posts are never cascade-deleted.
+- Content is sanitized by `sanitizeHtml()` (`app/html-sanitizer.php`) **on save and again on output**: allowlist p/br/h2–h4/strong/b/em/i/u/s/ul/ol/li/blockquote/hr/figure/figcaption/a[href,title]/img[src,alt]; script/style/iframe/svg/form… dropped with contents, other tags unwrapped, `h1` → `h2`, `div` → `p`; `javascript:`/`data:` URLs removed; external links get `target=_blank rel="noopener noreferrer"`; images get `loading=lazy`.
+
+**Public API** — `api/blog.php` (GET only, `{ok:false,message}` + 404/405/500 on errors):
+- no params → `{ok, categories:[active {slug,name,description}], posts:[cards newest first]}`; cards = `slug,title,excerpt,image,date,featured,category,categoryName` (no content).
+- `?featured=1&limit=3` → featured first, then newest (homepage).
+- `?slug=x` → `{ok, post:{…card, content, authorName, categoryActive, updatedAt, metaTitle, metaDescription, relatedProduct:{slug,name}|null, isPreview}, related:[3 cards, same category first]}`. Slugs are regex-validated.
+- `?slug=x&preview=1` → also drafts/scheduled, only when the request carries a logged-in admin session (read with `read_and_close`; no session is started for normal visitors). Admin links use this for the eye/Preview buttons.
+
+**Admin editor** (`blog-form.php`): dependency-free contenteditable + `execCommand` toolbar (H2/H3/P, bold, italic, lists, quote, link, image upload via `upload.php`, HTML source toggle); paste is inserted as plain text. Images are stored site-root relative (`uploads/…`) and displayed via `../` inside the admin (rewritten on load/submit). Featured image must be an uploaded/`images/` JPG/PNG/WebP/GIF.
+
+**Migration**: `app/blog-seed.json` is an exact export of the old `js/blog-data.js` (3 categories, 9 posts). `importBlogSeed()` maps `image→featuredImage`, `date→publishedAt`, `relatedProductSlug→relatedProductId`, `sections[{heading,body}]→content` (`<h2>` + `<p>` per blank-line paragraph), author "MarkEn Team"; matches by slug with `INSERT IGNORE`, so reruns never duplicate or overwrite admin edits. It runs automatically once (existing DBs: when the v5 migration creates `blogs`; fresh installs: after `seedCatalogue()` so product links resolve). `php scripts/import-blog.php` reruns it and reports missing images / invalid slugs / unmapped fields.
+
+**SEO limitation**: blog pages are still client-rendered (static HTML + fetch), like the product pages. Title/description/JSON-LD are set by JS, so crawlers that don't execute JS see the placeholder `<head>`. Googlebot renders JS; server-side rendering would be the next step if needed. No canonical tags exist on the site.
+
 ## 12. Future Claude Instructions
 
 - Always read this `CLAUDE.md` before making changes to this repository.
@@ -267,4 +299,4 @@ admin/
 - Prefer minimal, targeted modifications over unnecessary refactoring.
 - Never redesign unrelated sections while implementing a requested change.
 - Check both desktop and mobile implications before modifying shared CSS (`base.css`, `header.css`, `footer.css`, `hero.css`).
-- Before changing a global/shared component (header, footer, hero, `.reveal`, `.btn*`, `data.js`/`blog-data.js` helpers), determine which other pages use it (see §11) so the change doesn't silently break them.
+- Before changing a global/shared component (header, footer, hero, `.reveal`, `.btn*`, `data.js`/`blog-render.js` helpers), determine which other pages use it (see §11) so the change doesn't silently break them.

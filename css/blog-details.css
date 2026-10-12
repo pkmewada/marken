@@ -73,6 +73,49 @@
   margin-bottom: 1.25rem;
   font-size: 1rem;
 }
+/* Rich text from the admin blog editor (base.css resets lists and link styling). */
+.bd-body h3,
+.bd-body h4 {
+  font-size: 1.15rem;
+  margin: 2rem 0 0.75rem;
+}
+.bd-body ul,
+.bd-body ol {
+  margin: 0 0 1.25rem;
+  padding-left: 1.4rem;
+  color: var(--body);
+  line-height: 1.9;
+}
+.bd-body ul {
+  list-style: disc;
+}
+.bd-body ol {
+  list-style: decimal;
+}
+.bd-body a {
+  color: var(--blue);
+  text-decoration: underline;
+}
+.bd-body strong,
+.bd-body b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.bd-body img {
+  height: auto;
+  margin: 2rem 0;
+}
+.bd-body blockquote {
+  margin: 2rem 0;
+  padding-left: 1.25rem;
+  border-left: 3px solid var(--navy);
+  font-style: italic;
+}
+.bd-body hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2.5rem 0;
+}
 
 .bd-cta {
   margin: 3rem auto 0;
