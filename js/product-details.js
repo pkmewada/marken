@@ -202,14 +202,6 @@ if (!product) {
     });
   });
 
-  // Scrolled header — collapse header-main, show nav centered in utility bar
-  const pdHeader = document.querySelector(".site-header");
-  if (pdHeader) {
-    const syncScrolled = () => pdHeader.classList.toggle("pd-scrolled", window.scrollY > 10);
-    window.addEventListener("scroll", syncScrolled, { passive: true });
-    syncScrolled();
-  }
-
   // Re-run reveal observer for content injected after main.js already ran
   const revealTargets = document.querySelectorAll(".reveal:not(.is-visible)");
   const observer = new IntersectionObserver(

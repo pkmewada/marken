@@ -19,84 +19,14 @@
   padding: 0;
 }
 
-/* ---------- Header overlay + scroll collapse (Product Details only) ----------
-   At rest (top of page): header is fixed + transparent, overlaying the hero
-   exactly like index.html. The hero stays position:relative so it scrolls
-   with the page (not pinned like the homepage video).
-   On scroll (.pd-scrolled toggled by product-details.js): collapses to a
-   solid utility-bar-only strip with nav links centered inside it.
-   All rules scoped to body.pd-page — index.html is untouched. */
+/* ---------- Header overlay (Product Details only) ----------
+   At rest the header is fixed + transparent over the hero, like index.html; the
+   solid/compact-on-scroll header is shared (header.css .is-solid/.is-compact).
+   The hero stays position:relative so it scrolls with the page (not pinned like
+   the homepage video). Scoped to body.pd-page — index.html is untouched. */
 
-/* Hero scrolls with page (not pinned); header.css fixed position is kept */
 body.pd-page .hero {
   position: relative;
-}
-
-/* Solid bg + readable colors once scrolled */
-body.pd-page .site-header.pd-scrolled {
-  background: rgba(255, 255, 255, 0.97);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 1px 0 var(--border);
-}
-body.pd-page .site-header.pd-scrolled .header-utility {
-  border-bottom-color: var(--border);
-}
-body.pd-page .site-header.pd-scrolled .header-utility a,
-body.pd-page .site-header.pd-scrolled .header-utility button {
-  color: var(--body);
-}
-body.pd-page .site-header.pd-scrolled .header-utility a:hover,
-body.pd-page .site-header.pd-scrolled .header-utility button:hover {
-  color: var(--navy);
-}
-body.pd-page .site-header.pd-scrolled .header-logo img {
-  filter: none;
-}
-body.pd-page .site-header.pd-scrolled .header-burger span {
-  background: var(--ink);
-}
-
-/* Collapse header-main on scroll; float nav centered into the utility bar.
-   .header-main__inner loses position:relative so the abs-pos .header-nav
-   climbs to .site-header as containing block and escapes overflow:hidden.
-   Desktop only: below 1024px the nav is replaced by the burger, which lives
-   in header-main, so collapsing it there would hide the menu button. */
-@media (min-width: 1025px) {
-  body.pd-page .site-header .header-main {
-    overflow: hidden;
-    max-height: var(--nav-h);
-    transition: max-height 0.4s var(--ease);
-  }
-  body.pd-page .site-header.pd-scrolled .header-main {
-    max-height: 0;
-  }
-  body.pd-page .site-header.pd-scrolled .header-main__inner {
-    position: static;
-  }
-  body.pd-page .site-header.pd-scrolled .header-nav {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: var(--util-h);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 5;
-    gap: 2.4rem;
-  }
-  body.pd-page .site-header.pd-scrolled .header-nav > .nav-item > a,
-  body.pd-page .site-header.pd-scrolled .header-nav > a {
-    color: var(--ink);
-  }
-}
-
-/* Home link only visible in the compact scrolled bar (logo handles it at the top) */
-body.pd-page .pd-nav-home {
-  display: none;
-}
-body.pd-page .site-header.pd-scrolled .pd-nav-home {
-  display: inline;
 }
 
 /* ---------- Hero action column (over the media, bottom-right) ---------- */

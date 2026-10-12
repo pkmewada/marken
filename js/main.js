@@ -25,12 +25,14 @@ function showFormMessage(el, text, type, onHidden) {
 }
 
 // Header: transparent-over-hero -> solid on scroll (always solid on
-// interior pages that have no hero to sit over)
+// interior pages that have no hero to sit over); compact once scrolled, on every page
 const header = document.querySelector(".site-header");
 if (header) {
   const hasHero = !!document.querySelector(".hero");
   const onScroll = () => {
-    header.classList.toggle("is-solid", !hasHero || window.scrollY > 40);
+    const scrolled = window.scrollY > 10;
+    header.classList.toggle("is-solid", !hasHero || scrolled);
+    header.classList.toggle("is-compact", scrolled);
   };
   onScroll();
   window.addEventListener("scroll", onScroll, { passive: true });
