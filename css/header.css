@@ -165,6 +165,10 @@
     z-index: 5;
     gap: 2.4rem;
   }
+  /* The mega menu is fixed at the full header height; follow the collapsed header up. */
+  .site-header.is-compact .mega-menu {
+    top: var(--util-h);
+  }
 }
 
 /* Home link only in the compact bar (the logo handles it at the top) */

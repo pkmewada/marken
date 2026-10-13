@@ -9,12 +9,12 @@
     content="MarkEn — precision-engineered medical cold chain, blood bank, hospital furniture and critical care technology, trusted by 20,000+ healthcare institutions worldwide."
   />
   <title>MarkEn | Precision Medical Technology</title>
-  <link rel="stylesheet" href="css/base.css?v=2163" />
-  <link rel="stylesheet" href="css/header.css?v=2163" />
-  <link rel="stylesheet" href="css/hero.css?v=2163" />
-  <link rel="stylesheet" href="css/home.css?v=2163" />
-  <link rel="stylesheet" href="css/blog.css?v=2163" />
-  <link rel="stylesheet" href="css/footer.css?v=2163" />
+  <link rel="stylesheet" href="css/base.css?v=2164" />
+  <link rel="stylesheet" href="css/header.css?v=2164" />
+  <link rel="stylesheet" href="css/hero.css?v=2164" />
+  <link rel="stylesheet" href="css/home.css?v=2164" />
+  <link rel="stylesheet" href="css/blog.css?v=2164" />
+  <link rel="stylesheet" href="css/footer.css?v=2164" />
   <style>
     /* vertical slider – placed after Our Story section */
     /* Fills the viewport below the compact (scrolled) header, so the whole slider is
@@ -905,15 +905,34 @@
 
       let lastY = window.scrollY;
       let lastOffset = offset();
+      // Speed = distance scrolled over the last 200ms; per-event deltas are too jittery to trust.
+      // One slow wheel notch moves ~100px in that window, a fast scroll several notches.
+      const WINDOW = 200, FAST_PX = 240;
+      let recent = [];        // [time, |dy|] of scroll events inside the window
+      let fastUntil = 0;      // a fast scroll passes through; the slider stays out of the way until it settles
+      let settleTimer = null;
       window.addEventListener("scroll", function(){
         const y = window.scrollY;
         const off = offset();
         const dir = Math.sign(y - lastY);
+        const now = performance.now();
+        recent.push([now, Math.abs(y - lastY)]);
+        recent = recent.filter((r) => now - r[0] < WINDOW);
+        if(recent.reduce((sum, r) => sum + r[1], 0) > FAST_PX) fastUntil = now + 200;
         const crossed = dir > 0 ? (lastOffset > -1 && off < -1) : (lastOffset < 1 && off > 1);
-        // Big jumps (anchor links, Home/End) skip the lock.
-        if(dir && crossed && hasMore(dir) && Math.abs(y - lastY) < window.innerHeight){
+        // Big jumps (anchor links, Home/End) and fast flings skip the lock; slow scrolling stops on the slider.
+        if(dir && crossed && hasMore(dir) && now > fastUntil && Math.abs(y - lastY) < window.innerHeight){
           window.scrollTo({ top: y + off, behavior: "instant" });   // html has scroll-behavior: smooth
         }
+        // A fast scroll that comes to rest just past the lock point would otherwise skip the
+        // slides entirely; once scrolling stops, ease the slider back into its locked position.
+        clearTimeout(settleTimer);
+        if(dir) settleTimer = setTimeout(function(){
+          const o = offset();
+          if(Math.sign(-o) === dir && Math.abs(o) >= 2 && Math.abs(o) < window.innerHeight * 0.2 && hasMore(dir)){
+            window.scrollTo({ top: window.scrollY + o, behavior: "smooth" });
+          }
+        }, 200);
         lastY = window.scrollY;
         lastOffset = offset();
       }, { passive: true });
@@ -924,7 +943,7 @@
         const dir = Math.sign(direction);
         // Not locked yet, or no slides left that way: normal page scroll. While a slide
         // is still animating, swallow the wheel so trackpad momentum can't leak to the page.
-        if(!dir || !isLocked() || (!hasMore(dir) && !animating)) return;
+        if(!dir || performance.now() < fastUntil || !isLocked() || (!hasMore(dir) && !animating)) return;
 
         e.preventDefault();
         if(!hasMore(dir)) return;
@@ -979,8 +998,8 @@
 
     })();
   </script>
-  <script src="js/blog-render.js?v=2163"></script>
-  <script src="js/main.js?v=2163"></script>
+  <script src="js/blog-render.js?v=2164"></script>
+  <script src="js/main.js?v=2164"></script>
   <script>
     document.querySelectorAll(".cert-card").forEach((card) => {
       const desc = card.querySelector(".cert-card__desc");
