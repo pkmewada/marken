@@ -58,6 +58,16 @@ if (burger && mobileMenu) {
     mobileMenu.classList.remove("is-open");
     document.body.classList.remove("menu-open");
   });
+  // Products sub-menu: the chevron expands/collapses the categories; the label stays a link.
+  const subToggle = mobileMenu.querySelector(".mobile-menu__toggle");
+  const subPanel = mobileMenu.querySelector(".mobile-menu__panel");
+  if (subToggle && subPanel) {
+    subToggle.addEventListener("click", () => {
+      const open = subPanel.classList.toggle("is-open");
+      subToggle.setAttribute("aria-expanded", open);
+      subToggle.setAttribute("aria-label", open ? "Hide product categories" : "Show product categories");
+    });
+  }
 }
 
 // Header categories from the admin database. The hardcoded links in the HTML
