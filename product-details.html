@@ -8,11 +8,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="MarkEn product details." />
   <title>Product | MarkEn</title>
-  <link rel="stylesheet" href="css/base.css?v=2166" />
-  <link rel="stylesheet" href="css/header.css?v=2166" />
-  <link rel="stylesheet" href="css/hero.css?v=2166" />
-  <link rel="stylesheet" href="css/product-details.css?v=2166" />
-  <link rel="stylesheet" href="css/footer.css?v=2166" />
+  <link rel="stylesheet" href="css/base.css?v=2167" />
+  <link rel="stylesheet" href="css/header.css?v=2167" />
+  <link rel="stylesheet" href="css/hero.css?v=2167" />
+  <link rel="stylesheet" href="css/product-details.css?v=2167" />
+  <link rel="stylesheet" href="css/footer.css?v=2167" />
 </head>
 <body class="pd-page">
 
@@ -118,7 +118,7 @@
     </div>
   </div>
 
-  <section class="hero">
+  <section class="hero" data-section="hero">
     <img class="hero__video" id="pd-hero-image" src="" alt="" />
     <div class="hero__scrim"></div>
     <div class="hero__content container">
@@ -141,7 +141,8 @@
         <span id="pd-breadcrumb-name">Product</span>
       </nav>
 
-      <section class="container pd-slider">
+      <!-- Sections below are reordered per product by product-details.js (data-section = key in app/product-sections.php) -->
+      <section class="container pd-slider" data-section="gallery">
         <div class="pd-slider__stage">
           <button class="pd-slider__arrow pd-slider__arrow--prev" id="pd-slider-prev" aria-label="Previous image">&larr;</button>
           <button class="pd-slider__arrow pd-slider__arrow--next" id="pd-slider-next" aria-label="Next image">&rarr;</button>
@@ -149,7 +150,7 @@
         <div class="pd-slider__dots" id="pd-slider-dots"></div>
       </section>
 
-      <section class="pd-applications" id="pd-applications-section">
+      <section class="pd-applications" id="pd-applications-section" data-section="applications">
         <div class="pd-applications__media">
           <img id="pd-applications-image" src="" alt="" />
           <div class="pd-applications__panel">
@@ -159,14 +160,14 @@
         </div>
       </section>
 
-      <section class="pd-certifications">
+      <section class="pd-certifications" data-section="certifications">
         <div class="container">
           <h2 class="reveal">Certifications</h2>
           <div class="pd-certifications__grid reveal" id="pd-certifications-grid"></div>
         </div>
       </section>
 
-      <section class="container pd-why">
+      <section class="container pd-why" data-section="whyChoose">
         <h2 class="reveal">Why Choose MarkEn</h2>
         <div class="pd-why__grid reveal">
           <div class="pd-why__card">
@@ -192,7 +193,7 @@
         </div>
       </section>
 
-      <section class="pd-documentation" id="pd-documentation">
+      <section class="pd-documentation" id="pd-documentation" data-section="documentation">
         <div class="container">
           <h2 class="reveal">Documentation</h2>
           <p class="pd-documentation__lead reveal">Request the latest technical documents for this product — our team will email them directly to you.</p>
@@ -225,7 +226,7 @@
         </div>
       </section>
 
-      <section class="container pd-faq">
+      <section class="container pd-faq" data-section="faq">
         <h2 class="reveal">Frequently Asked Questions</h2>
         <div class="pd-faq__list reveal">
           <div class="pd-faq__item">
@@ -331,8 +332,8 @@
   </div>
 
   <script src="api/catalog.php"></script>
-  <script src="js/data.js?v=2166"></script>
-  <script src="js/main.js?v=2166"></script>
-  <script src="js/product-details.js?v=2166"></script>
+  <script src="js/data.js?v=2167"></script>
+  <script src="js/main.js?v=2167"></script>
+  <script src="js/product-details.js?v=2167"></script>
 </body>
 </html>

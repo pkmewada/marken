@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/config.php';
 
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 6;
 const SCHEMA_VERSION_FILE = __DIR__ . '/.schema-version';
 
 function db(): PDO {

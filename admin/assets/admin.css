@@ -109,6 +109,39 @@ body { background: #f4f6f9; }
 .gallery-item img { width: 100%; height: 100%; object-fit: contain; }
 .gallery-item .btn-close { position: absolute; top: 4px; right: 4px; background-color: #fff; padding: .3rem; font-size: .6rem; }
 
+/* Product page section order (product-form.php) */
+.section-order { list-style: none; padding: 0; margin: 0; display: grid; gap: .4rem; }
+.section-order__item {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .45rem .6rem;
+  border: 1px solid #dee2e6;
+  border-radius: .4rem;
+  background: #fff;
+  font-size: .875rem;
+  user-select: none;
+}
+.section-order__item.is-locked { background: #f8f9fa; color: #6c757d; }
+.section-order__item.is-dragging { border-color: var(--mk-blue); background: #eff6ff; box-shadow: 0 4px 12px rgba(0,0,0,.12); position: relative; z-index: 1; }
+.section-order__handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: .3rem;
+  background: none;
+  color: #6c757d;
+  touch-action: none;   /* touch drags move the row instead of scrolling the page */
+}
+button.section-order__handle { cursor: grab; }
+button.section-order__handle:hover, button.section-order__handle:focus-visible { background: #e9ecef; color: var(--mk-navy); }
+.section-order__item.is-dragging .section-order__handle { cursor: grabbing; }
+.section-order__pos { color: #6c757d; min-width: 1.4rem; }
+
 /* Blog rich-text editor (blog-form.php) */
 .blog-editor { border: 1px solid #ced4da; border-radius: .375rem; overflow: hidden; }
 .blog-editor__toolbar { padding: .5rem; background: #f8f9fa; border-bottom: 1px solid #e9ecef; }

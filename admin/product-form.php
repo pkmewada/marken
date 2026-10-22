@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
+require_once dirname(__DIR__) . '/app/product-sections.php';
 requireLogin();
 
 const CERT_OPTIONS = ['WHO PQS', 'ISO 9001:2015', 'ISO 13485:2016', 'ISO 14001:2015', 'WHO GMP', 'CE Mark', 'BIS', 'CDSCO'];
@@ -14,7 +15,9 @@ $p = [
     'image' => '', 'heroMediaType' => '', 'heroMedia' => '',
     'description' => '', 'fullDescription' => '', 'metaTitle' => '', 'metaDescription' => '',
     'gallery' => [], 'features' => [], 'applications' => [], 'specifications' => [], 'certifications' => [], 'documents' => [],
+    'sectionOrder' => defaultSectionOrder(),
 ];
+$savedOrder = $p['sectionOrder'];   // last persisted order — the Section Order card's "unsaved changes" baseline
 
 if ($editSlug !== '') {
     $row = dbOne('SELECT * FROM `products` WHERE slug = ?', [$editSlug]);
@@ -26,6 +29,7 @@ if ($editSlug !== '') {
     foreach (['gallery', 'features', 'applications', 'specifications', 'certifications', 'documents'] as $k) {
         $row[$k] = fromJson($row[$k]);
     }
+    $row['sectionOrder'] = $savedOrder = normalizeSectionOrder(fromJson($row['sectionOrder']));
     $p = array_merge($p, array_map(fn($v) => $v ?? '', $row));
 }
 
@@ -69,6 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         if ($l !== '' || $u !== '') $p['documents'][] = ['label' => $l, 'url' => $u];
     }
+    $order = parseSectionOrder(postList('sectionOrder'));
+    $p['sectionOrder'] = $order ?? normalizeSectionOrder(postList('sectionOrder'));
 
     $errors = validate($p, [
         'name'            => 'required|max:200',
@@ -103,6 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($d['label'] === '' || $d['url'] === '') { $errors['documents'] = 'Each document needs a label and a file or link.'; break; }
         if (!isSafeLink($d['url'])) { $errors['documents'] = 'Document links must start with https://, mailto: or be an uploaded file.'; break; }
     }
+    if ($order === null) $errors['sectionOrder'] = 'Invalid section order — the Hero must stay first. The list has been reset; check it and save again.';
 
     if (!$errors) {
         $vals = [
@@ -111,12 +118,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             toJson($p['features']), toJson($p['applications']), toJson($p['specifications']),
             toJson($p['certifications']), toJson($p['documents']),
             $p['metaTitle'] ?: null, $p['metaDescription'] ?: null,
-            $p['heroMediaType'] ?: null, $p['heroMedia'] ?: null,
+            $p['heroMediaType'] ?: null, $p['heroMedia'] ?: null, sectionOrderForDb($p['sectionOrder']),
         ];
         $cols = 'name = ?, slug = ?, categorySlug = ?, status = ?, featured = ?, image = ?, gallery = ?,
                  description = ?, fullDescription = ?, features = ?, applications = ?, specifications = ?,
                  certifications = ?, documents = ?, metaTitle = ?, metaDescription = ?,
-                 heroMediaType = ?, heroMedia = ?';
+                 heroMediaType = ?, heroMedia = ?, sectionOrder = ?';
         if ($id > 0) {
             dbRun("UPDATE `products` SET $cols WHERE id = ?", [...$vals, $id]);
             setFlash('success', "Product \"{$p['name']}\" updated.");
@@ -279,7 +286,7 @@ $groupError = fn(string $k) => isset($errors[$k]) ? '<div class="text-danger sma
             <?php foreach (STANDARD_DOCUMENTS as $std): ?><option value="<?= h($std) ?>"><?php endforeach; ?>
           </datalist>
           <div class="form-text">
-            Use <strong><?= h(implode('</strong>, <strong>', STANDARD_DOCUMENTS)) ?></strong> exactly to attach the file to that card on the product page — any other label adds an extra card.
+            Use <strong><?= implode('</strong>, <strong>', array_map('h', STANDARD_DOCUMENTS)) ?></strong> exactly to attach the file to that card on the product page — any other label adds an extra card.
             PDF, Word or image, max 10 MB — or paste a link.
           </div>
         </div>
@@ -358,6 +365,42 @@ $groupError = fn(string $k) => isset($errors[$k]) ? '<div class="text-danger sma
           <input type="hidden" id="heroMedia" name="heroMedia" value="<?= h($p['heroMedia']) ?>">
           <?= isset($errors['heroMedia']) ? '<div class="text-danger small mt-1">' . h($errors['heroMedia']) . '</div>' : '' ?>
           <div class="form-text">Optional. Fills the whole top section of the product page; videos autoplay muted on loop. Leave empty to show the product image instead.</div>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header">Section Order</div>
+        <div class="card-body">
+          <?= $groupError('sectionOrder') ?>
+          <ol class="section-order" id="sectionOrder" data-product="<?= h($isEdit ? $editSlug : '') ?>"
+              data-saved="<?= h(json_encode($savedOrder)) ?>">
+            <?php foreach ($p['sectionOrder'] as $i => $key): $locked = $key === LOCKED_SECTION; ?>
+              <li class="section-order__item<?= $locked ? ' is-locked' : '' ?>" data-key="<?= h($key) ?>">
+                <?php if ($locked): ?>
+                  <span class="section-order__handle" title="Locked — always first"><i class="bi bi-lock-fill"></i></span>
+                <?php else: ?>
+                  <button type="button" class="section-order__handle" title="Drag, or focus and use the arrow keys"
+                          aria-label="Move <?= h(PRODUCT_SECTIONS[$key]) ?> (arrow up / down)"><i class="bi bi-grip-vertical"></i></button>
+                <?php endif; ?>
+                <span class="section-order__pos"><?= $i + 1 ?>.</span>
+                <span class="section-order__name"><?= h(PRODUCT_SECTIONS[$key]) ?></span>
+                <span class="small text-muted ms-auto"><?= $locked ? 'Locked' : '' ?></span>
+                <input type="hidden" name="sectionOrder[]" value="<?= h($key) ?>">
+              </li>
+            <?php endforeach; ?>
+          </ol>
+          <?php if ($isEdit): ?>
+            <div class="d-flex align-items-center gap-2 mt-3">
+              <button type="button" class="btn btn-sm btn-dark" id="sectionOrderSave" disabled>
+                <i class="bi bi-check-lg me-1"></i>Save Section Order
+              </button>
+              <span class="small text-muted" id="sectionOrderStatus" role="status"></span>
+            </div>
+          <?php endif; ?>
+          <div class="form-text">
+            Order of the sections on the product page, below the hero. Applications only shows when applications are filled in.
+            <?= $isEdit ? 'Also saved with “Update Product”.' : 'Saved with the product.' ?>
+          </div>
         </div>
       </div>
 
@@ -491,6 +534,83 @@ heroRemove.addEventListener('click', () => {
   heroMedia.value = heroType.value = '';
   heroDrop.innerHTML = heroEmpty;
   heroRemove.classList.add('d-none');
+});
+
+// Section order: pointer-event drag on the grip (mouse + touch) or arrow keys on the focused grip.
+// The locked hero row has no grip and rows are never inserted above it; the server re-checks both.
+const sectionList = document.getElementById('sectionOrder');
+const sectionSave = document.getElementById('sectionOrderSave');
+const sectionStatus = document.getElementById('sectionOrderStatus');
+let savedOrder = JSON.parse(sectionList.dataset.saved);
+let draggedRow = null;
+const currentOrder = () => [...sectionList.children].map((li) => li.dataset.key);
+
+function sectionOrderChanged() {
+  [...sectionList.children].forEach((li, i) => { li.querySelector('.section-order__pos').textContent = `${i + 1}.`; });
+  if (!sectionSave) return;
+  const dirty = currentOrder().join() !== savedOrder.join();
+  sectionSave.disabled = !dirty;
+  sectionStatus.textContent = dirty ? 'Unsaved changes' : '';
+}
+
+function moveRow(row, target, before) {
+  if (!target || target === row || target.classList.contains('is-locked') && before) return;
+  target[before ? 'before' : 'after'](row);
+  sectionOrderChanged();
+}
+
+sectionOrderChanged();   // after a failed form submit the posted order may differ from the saved one
+
+sectionList.addEventListener('pointerdown', (e) => {
+  const handle = e.target.closest('button.section-order__handle');
+  if (!handle || e.button !== 0) return;
+  e.preventDefault();
+  handle.setPointerCapture(e.pointerId);
+  draggedRow = handle.closest('li');
+  draggedRow.classList.add('is-dragging');
+});
+sectionList.addEventListener('pointermove', (e) => {
+  if (!draggedRow) return;
+  const over = [...sectionList.children].find((li) => {
+    const r = li.getBoundingClientRect();
+    return li !== draggedRow && e.clientY >= r.top && e.clientY <= r.bottom;
+  });
+  if (!over) return;
+  const r = over.getBoundingClientRect();
+  moveRow(draggedRow, over, e.clientY < r.top + r.height / 2);
+});
+['pointerup', 'pointercancel'].forEach((type) => sectionList.addEventListener(type, () => {
+  draggedRow?.classList.remove('is-dragging');
+  draggedRow = null;
+}));
+sectionList.addEventListener('keydown', (e) => {
+  const handle = e.target.closest('button.section-order__handle');
+  if (!handle || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+  e.preventDefault();
+  const row = handle.closest('li');
+  if (e.key === 'ArrowUp') moveRow(row, row.previousElementSibling, true);
+  else moveRow(row, row.nextElementSibling, false);
+  handle.focus();
+});
+
+sectionSave?.addEventListener('click', async () => {
+  sectionSave.disabled = true;
+  sectionStatus.textContent = 'Saving…';
+  try {
+    const res = await fetch('product-sections', {
+      method: 'POST',
+      headers: { 'X-CSRF-Token': CSRF, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product: sectionList.dataset.product, order: currentOrder() }),
+    });
+    const data = await res.json().catch(() => ({ error: `Server error (${res.status})` }));
+    if (!res.ok || data.error) throw new Error(data.error || `Save failed (${res.status})`);
+    savedOrder = data.order;
+    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: data.message, showConfirmButton: false, timer: 2500 });
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    sectionOrderChanged();
+  }
 });
 </script>
 HTML;

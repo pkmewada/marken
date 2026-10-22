@@ -183,6 +183,16 @@ body.pd-page .hero {
   font-size: 0.82rem;
 }
 
+/* Section order is set per product in the admin. The slider and applications
+   only pad their bottom (by default they follow the breadcrumb / each other);
+   placed right after a grey band they need the same gap on top. */
+.pd-certifications + .pd-slider,
+.pd-documentation + .pd-slider,
+.pd-certifications + .pd-applications,
+.pd-documentation + .pd-applications {
+  padding-top: 5rem;
+}
+
 /* ---------- Certifications ---------- */
 .pd-certifications {
   border-top: 1px solid var(--border);
