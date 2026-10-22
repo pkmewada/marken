@@ -9,18 +9,24 @@
     content="MarkEn — precision-engineered medical cold chain, blood bank, hospital furniture and critical care technology, trusted by 20,000+ healthcare institutions worldwide."
   />
   <title>MarkEn | Precision Medical Technology</title>
-  <link rel="stylesheet" href="css/base.css?v=2167" />
-  <link rel="stylesheet" href="css/header.css?v=2167" />
-  <link rel="stylesheet" href="css/hero.css?v=2167" />
-  <link rel="stylesheet" href="css/home.css?v=2167" />
-  <link rel="stylesheet" href="css/blog.css?v=2167" />
-  <link rel="stylesheet" href="css/footer.css?v=2167" />
+  <link rel="stylesheet" href="css/base.css?v=2169" />
+  <link rel="stylesheet" href="css/header.css?v=2169" />
+  <link rel="stylesheet" href="css/hero.css?v=2169" />
+  <link rel="stylesheet" href="css/home.css?v=2169" />
+  <link rel="stylesheet" href="css/products.css?v=2169" />
+  <link rel="stylesheet" href="css/blog.css?v=2169" />
+  <link rel="stylesheet" href="css/footer.css?v=2169" />
   <style>
     /* vertical slider – placed after Our Story section */
-    /* Fills the viewport below the compact (scrolled) header, so the whole slider is
-       visible while it is locked in place (see the slider script). */
+    /* .vs-scroll is taller than the slider (height set by the slider script) and the slider
+       sticks below the compact header while the page scrolls through it; the scroll
+       position picks the slide. Page scrolling itself is never blocked. */
+    .vs-scroll {
+      height: calc(100vh - var(--util-h) + var(--vs-extra, 0px));
+    }
     .vertical-slider-section {
-      position: relative;
+      position: sticky;
+      top: var(--util-h);
       height: calc(100vh - var(--util-h));
       width: 100%;
       overflow: hidden;
@@ -256,7 +262,7 @@
       flex-direction: column;
       height: 100%;
       width: 100%;
-      transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);   /* = STEP_MS in the slider script */
       will-change: transform;
     }
     
@@ -282,7 +288,11 @@
     
     /* The header does not collapse at 1024px and below, so leave room for all of it */
     @media (max-width: 1024px) {
+      .vs-scroll {
+        height: calc(100vh - var(--header-h) + var(--vs-extra, 0px));
+      }
       .vertical-slider-section {
+        top: var(--header-h);
         height: calc(100vh - var(--header-h));
       }
     }
@@ -489,6 +499,7 @@
       </script>
 
       <!-- VERTICAL SLIDER SECTION (after Our Story) -->
+      <div class="vs-scroll" id="vsScroll">
       <section class="vertical-slider-section" id="verticalSlider">
         <div class="vertical-slider-track" id="vsTrack">
           <div class="vs-slide active">
@@ -538,6 +549,7 @@
           Scroll down
         </div>
       </section>
+      </div>
 
       <!-- Featured collection -->
       <section class="section featured container">
@@ -547,70 +559,45 @@
           Ultra-low temperature freezers, refrigerators and cold boxes engineered for uninterrupted
           vaccine and biologic integrity — from –86°C laboratory storage to solar-powered field deployment.
         </p>
-        <a href="products/medical-cold-chain" class="btn btn-dark reveal">Discover the Collection</a>
+        <!-- Filled by the inline script at the end of the page: admin-featured products first, topped up at random to 8 -->
+        <div class="products-grid featured__products" id="home-featured-grid"></div>
 
-        <div class="featured__grid">
-          <div class="featured__large reveal">
-            <img src="images/products/ult-deep-freezer-86.webp" alt="ULT Deep Freezer -86C" />
-          </div>
-          <div class="featured__side">
-            <div class="featured__detail reveal">
-              <img src="images/products/ice-lined-refrigerator.webp" alt="Ice Lined Refrigerator" />
-            </div>
-            <div class="product-card-mini reveal">
-              <div class="product-card-mini__thumb">
-                <img src="images/products/passive-cold-box.webp" alt="Passive Cold Box" />
-              </div>
-              <div class="product-card-mini__info">
-                <span>Medical Cold Chain</span>
-                <h4>Passive Cold Box</h4>
-                <a href="product-details/passive-cold-box">Details</a>
-              </div>
-              <span class="product-card-mini__page">1 / 6</span>
-            </div>
-          </div>
-        </div>
+        <a href="products.html" class="btn btn-dark featured__cta reveal">Discover the Collection</a>
       </section>
 
-      <!-- Split banner: Blood Bank Equipment -->
-      <section class="split">
-        <div class="split__copy reveal">
-          <span class="eyebrow">Blood Bank Equipment</span>
-          <h2>Refrigerated Centrifuge</h2>
-          <p>
-            Our Refrigerated Centrifuge is designed for precise separation of temperature-sensitive
-            samples in clinical, biomedical, pharmaceutical, and research laboratories — ideal for
-            blood banks, pathology labs, molecular biology, and biotech applications.
-          </p>
-          <a href="product-details/refrigerated-centrifuge" class="btn btn-dark">View Product</a>
-        </div>
-        <div class="split__media reveal">
-          <img src="images/products/refrigerated-centrifuge.webp" alt="Refrigerated Centrifuge" />
-        </div>
-      </section>
-
-      <!-- Editorial CTA + image grid: Hospital Furniture -->
-      <section class="section editorial-cta container">
-        <span class="eyebrow reveal">Hospital Furniture</span>
-        <h2 class="reveal">Built for Critical Care</h2>
-        <p class="reveal">
-          Beds, trolleys and furniture engineered for durability, hygiene and patient comfort —
-          trusted by 20,000+ healthcare institutions.
-        </p>
-        <a href="products/hospital-furniture" class="btn btn-dark reveal">Shop the Collection</a>
-        <div class="editorial-cta__grid">
-          <img class="reveal" src="images/products/icu-7-function-bed.webp" alt="ICU 7 Function Motorized Bed" />
-          <img class="reveal" src="images/products/examination-couch.webp" alt="Examination Couch" />
-        </div>
-      </section>
-
-      <!-- Stats -->
+      <!-- Stats — numbers count up from 0 to data-count when the band scrolls into view -->
       <section class="stats" id="clients">
         <div class="container stats__grid">
-          <div class="reveal"><span class="stats__value">25+</span><span class="stats__label">Years in Business</span></div>
-          <div class="reveal"><span class="stats__value">400+</span><span class="stats__label">Product Range</span></div>
-          <div class="reveal"><span class="stats__value">20,000+</span><span class="stats__label">Healthcare Customers</span></div>
-          <div class="reveal"><span class="stats__value">11+</span><span class="stats__label">WHO PQS Accredited Products</span></div>
+          <div class="stats__card reveal">
+            <span class="stats__icon" style="--icon-bg: #00176d"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="3"/><circle cx="5.5" cy="9" r="2.2"/><circle cx="18.5" cy="9" r="2.2"/><path d="M7 20v-3.5a5 5 0 0 1 10 0V20zM1.5 20v-2.5a4 4 0 0 1 4.6-3.95A6.9 6.9 0 0 0 5.2 17v3zM22.5 20v-2.5a4 4 0 0 0-4.6-3.95A6.9 6.9 0 0 1 18.8 17v3z"/></svg></span>
+            <span class="stats__value" data-count="25" data-suffix="+">0</span>
+            <span class="stats__label">Years In Business</span>
+          </div>
+          <div class="stats__card reveal">
+            <span class="stats__icon" style="--icon-bg: #f4a261"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 3 6.5l9 4.5 9-4.5zM2.5 8v9.5L11 22v-9.5zM13 12.5V22l8.5-4.5V8z"/></svg></span>
+            <span class="stats__value" data-count="400" data-suffix="+">0</span>
+            <span class="stats__label">Product Range</span>
+          </div>
+          <div class="stats__card reveal">
+            <span class="stats__icon" style="--icon-bg: #2a9d8f"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 4 5v6.5c0 4.9 3.4 9.3 8 10.5 4.6-1.2 8-5.6 8-10.5V5zm-1.2 13.6-3.5-3.5 1.4-1.4 2.1 2.1 4.6-4.6 1.4 1.4z"/></svg></span>
+            <span class="stats__value" data-count="11">0</span>
+            <span class="stats__label">Product WHO PQS Accredited</span>
+          </div>
+          <div class="stats__card reveal">
+            <span class="stats__icon" style="--icon-bg: #e9c46a"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="10" cy="7" r="4"/><path d="M2 21v-1.5A6.5 6.5 0 0 1 8.5 13h3a6.4 6.4 0 0 1 2.2.4A4.5 4.5 0 0 0 12.5 21z"/><path d="M18 22s-4.5-2.6-4.5-5.4a2.3 2.3 0 0 1 4.5-.8 2.3 2.3 0 0 1 4.5.8C22.5 19.4 18 22 18 22z"/></svg></span>
+            <span class="stats__value" data-count="20000" data-suffix="+">0</span>
+            <span class="stats__label">Happy Customers</span>
+          </div>
+          <div class="stats__card reveal">
+            <span class="stats__icon" style="--icon-bg: #264653"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.5 6.5 8 4 1 9.5l4.6 5.8 1.3-1.1 4.6 4.5a1.4 1.4 0 0 0 2-2l.3.3a1.4 1.4 0 0 0 2-2l.3.3a1.4 1.4 0 0 0 2-2l.4.3 1.2-1L23 9.5 16 4l-4.5 3.6a1.7 1.7 0 0 0 2.1 2.6l1.9-1.4 4 3.9-1 .8-4.2-4-1.4 1.1a3.7 3.7 0 0 1-4.6-5.8z"/></svg></span>
+            <span class="stats__value" data-count="30" data-suffix="+">0</span>
+            <span class="stats__label">Franchise Across India</span>
+          </div>
+          <div class="stats__card reveal">
+            <span class="stats__icon" style="--icon-bg: #e76f51"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 21V4h10v17h-3v-4H6v4zm3-14v2h2V7zm4 0v2h2V7zm-4 4v2h2v-2zm4 0v2h2v-2zM14 21V9h7v12zm2-9v2h3v-2zm0 4v2h3v-2zM1 21h22v1.5H1z"/></svg></span>
+            <span class="stats__value" data-count="500" data-suffix="+">0</span>
+            <span class="stats__label">Service Centers</span>
+          </div>
         </div>
       </section>
 
@@ -865,19 +852,25 @@
 
       const slides = track.querySelectorAll(".vs-slide");
       const total = slides.length;
+      const wrap = document.getElementById("vsScroll");
+      const STEP_MS = 600;      // = the track's CSS transition
+      const STEP_VH = 70;       // page scroll that advances one slide
       let current = 0;
+      let target = 0;
       let animating = false;
-      let wheelDelta = 0;
-      let wheelTimer = null;
-      const threshold = 45;
 
-      // CREATE DOTS
+      // Reserve the scroll distance the slides take (CSS adds it to the slider height).
+      wrap.style.setProperty("--vs-extra", `${(total - 1) * STEP_VH}vh`);
+      const stepPx = () => window.innerHeight * STEP_VH / 100;
+
+      // CREATE DOTS — a click scrolls the page to that slide's position
       for(let i=0; i<total; i++){
         let dot = document.createElement("span");
         dot.className = "dot";
         if(i===0) dot.classList.add("active");
         dot.onclick = function(){
-          if(!animating) goToSlide(i);
+          const wrapTop = wrap.getBoundingClientRect().top + window.scrollY - parseFloat(getComputedStyle(slider).top);
+          window.scrollTo({ top: wrapTop + i * stepPx() });
         };
         dotsBox.appendChild(dot);
       }
@@ -911,122 +904,40 @@
         });
       }
 
-      function goToSlide(index){
-        if(animating) return;
-        current = index;
+      // Step one slide at a time towards the target, so even a fast scroll that jumps
+      // several slides plays each of them in order instead of skipping.
+      function stepTowardsTarget(){
+        if(animating || current === target) return;
+        current += Math.sign(target - current);
         animating = true;
         track.style.transform = `translateY(-${current * 100}%)`;
         updateUI();
         setTimeout(()=>{
           animating = false;
-        }, 800);
+          stepTowardsTarget();
+        }, STEP_MS);
       }
 
-      // LOCK: the slider takes over only once its top meets the bottom of the fixed header.
-      // Page scrolling that would carry it past that point (either direction) stops exactly
-      // there while slides remain; after the last (down) / first (up) slide the page scrolls on.
-      const siteHeader = document.querySelector(".site-header");
-      const offset = () => slider.getBoundingClientRect().top - (siteHeader ? siteHeader.offsetHeight : 0);
-      const isLocked = () => Math.abs(offset()) < 2;
-      const hasMore = (dir) => dir > 0 ? current < total - 1 : current > 0;
-
-      let lastY = window.scrollY;
-      let lastOffset = offset();
-      // Speed = distance scrolled over the last 200ms; per-event deltas are too jittery to trust.
-      // One slow wheel notch moves ~100px in that window, a fast scroll several notches.
-      const WINDOW = 200, FAST_PX = 240;
-      let recent = [];        // [time, |dy|] of scroll events inside the window
-      let fastUntil = 0;      // a fast scroll passes through; the slider stays out of the way until it settles
-      let settleTimer = null;
-      window.addEventListener("scroll", function(){
-        const y = window.scrollY;
-        const off = offset();
-        const dir = Math.sign(y - lastY);
-        const now = performance.now();
-        recent.push([now, Math.abs(y - lastY)]);
-        recent = recent.filter((r) => now - r[0] < WINDOW);
-        if(recent.reduce((sum, r) => sum + r[1], 0) > FAST_PX) fastUntil = now + 200;
-        const crossed = dir > 0 ? (lastOffset > -1 && off < -1) : (lastOffset < 1 && off > 1);
-        // Big jumps (anchor links, Home/End) and fast flings skip the lock; slow scrolling stops on the slider.
-        if(dir && crossed && hasMore(dir) && now > fastUntil && Math.abs(y - lastY) < window.innerHeight){
-          window.scrollTo({ top: y + off, behavior: "instant" });   // html has scroll-behavior: smooth
-        }
-        // A fast scroll that comes to rest just past the lock point would otherwise skip the
-        // slides entirely; once scrolling stops, ease the slider back into its locked position.
-        clearTimeout(settleTimer);
-        if(dir) settleTimer = setTimeout(function(){
-          const o = offset();
-          if(Math.sign(-o) === dir && Math.abs(o) >= 2 && Math.abs(o) < window.innerHeight * 0.2 && hasMore(dir)){
-            window.scrollTo({ top: window.scrollY + o, behavior: "smooth" });
-          }
-        }, 200);
-        lastY = window.scrollY;
-        lastOffset = offset();
-      }, { passive: true });
-
-      // Desktop Wheel
-      slider.addEventListener("wheel", function(e){
-        let direction = e.deltaY;
-        const dir = Math.sign(direction);
-        // Not locked yet, or no slides left that way: normal page scroll. While a slide
-        // is still animating, swallow the wheel so trackpad momentum can't leak to the page.
-        if(!dir || performance.now() < fastUntil || !isLocked() || (!hasMore(dir) && !animating)) return;
-
-        e.preventDefault();
-        if(!hasMore(dir)) return;
-
-        wheelDelta += direction;
-        clearTimeout(wheelTimer);
-        wheelTimer = setTimeout(()=>{
-          wheelDelta = 0;
-        }, 150);
-
-        if(Math.abs(wheelDelta) >= threshold && !animating){
-          if(wheelDelta > 0 && current < total - 1){
-            goToSlide(current + 1);
-          } else if(wheelDelta < 0 && current > 0){
-            goToSlide(current - 1);
-          }
-          wheelDelta = 0;
-        }
-      }, { passive: false });
-
-      // TOUCH SUPPORT
-      let touchStart = 0;
-      slider.addEventListener("touchstart", function(e){
-        touchStart = e.touches[0].clientY;
-      }, { passive: true });
-
-      // While locked, a swipe changes the slide instead of scrolling the page.
-      slider.addEventListener("touchmove", function(e){
-        const dir = Math.sign(touchStart - e.touches[0].clientY);
-        if(dir && isLocked() && (hasMore(dir) || animating)) e.preventDefault();
-      }, { passive: false });
-
-      slider.addEventListener("touchend", function(e){
-        let end = e.changedTouches[0].clientY;
-        let diff = touchStart - end;
-        if(Math.abs(diff) < 50 || !isLocked()) return;
-        const dir = Math.sign(diff);
-        if(hasMore(dir)) goToSlide(current + dir);
-      }, { passive: true });
-
-      // KEYBOARD (only while locked; otherwise arrows scroll the page as usual)
-      document.addEventListener("keydown", function(e){
-        const dir = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
-        if(!dir || !isLocked() || !hasMore(dir)) return;
-        e.preventDefault();
-        goToSlide(current + dir);
-      });
+      // The scroll position inside .vs-scroll picks the slide. Native scrolling is never
+      // blocked (wheel, touch, keys, anchors all just scroll the page), so it can't get stuck.
+      function onScroll(){
+        const scrolled = parseFloat(getComputedStyle(slider).top) - wrap.getBoundingClientRect().top;
+        target = Math.max(0, Math.min(total - 1, Math.round(scrolled / stepPx())));
+        stepTowardsTarget();
+      }
+      window.addEventListener("scroll", onScroll, { passive: true });
 
       // INITIAL
       track.style.transform = "translateY(0)";
       updateUI();
+      onScroll();   // page may load already scrolled (reload, back button)
 
     })();
   </script>
-  <script src="js/blog-render.js?v=2167"></script>
-  <script src="js/main.js?v=2167"></script>
+  <script src="api/catalog.php"></script>
+  <script src="js/data.js?v=2169"></script>
+  <script src="js/blog-render.js?v=2169"></script>
+  <script src="js/main.js?v=2169"></script>
   <script>
     document.querySelectorAll(".cert-card").forEach((card) => {
       const desc = card.querySelector(".cert-card__desc");
@@ -1077,6 +988,46 @@
         }, { threshold: 0.15, rootMargin: "0px 0px -8% 0px" }).observe(el);
       });
     }).catch((err) => console.error(err));
+  </script>
+  <script>
+    // Featured collection: products marked "Featured" in the admin first, then random others, 8 in total (2 rows of 4).
+    (() => {
+      const shuffle = (list) => list.map((p) => [Math.random(), p]).sort((a, b) => a[0] - b[0]).map(([, p]) => p);
+      const picks = [
+        ...shuffle(PRODUCTS.filter((p) => p.featured)),
+        ...shuffle(PRODUCTS.filter((p) => !p.featured)),
+      ].slice(0, 8);
+      document.getElementById("home-featured-grid").innerHTML = picks.map(productCardHTML).join("");
+    })();
+
+    // Stats count-up: one rAF loop per number with ease-out; only textContent changes per frame,
+    // and tabular figures keep the width from jittering, so it stays smooth.
+    (() => {
+      const values = document.querySelectorAll(".stats__value[data-count]");
+      const show = (el, n) => (el.textContent = n + (el.dataset.suffix || ""));
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        values.forEach((el) => show(el, el.dataset.count));
+        return;
+      }
+      const run = (el) => {
+        const target = +el.dataset.count;
+        const duration = 2000;
+        let start = null;   // taken from the first frame: rAF timestamps can predate performance.now()
+        const tick = (now) => {
+          start ??= now;
+          const t = Math.min((now - start) / duration, 1);
+          show(el, Math.round(target * (1 - Math.pow(1 - t, 3))));
+          if (t < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      };
+      const observer = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        values.forEach(run);
+        observer.disconnect();
+      }, { threshold: 0.3 });
+      observer.observe(document.querySelector(".stats"));
+    })();
   </script>
 </body>
 </html>
