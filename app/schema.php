@@ -163,6 +163,9 @@ function migrateSchema(PDO $pdo, bool $freshInstall = false): void {
         importBlogSeed($pdo);
     }
 
+    // v6: per-product section order of the product page (app/product-sections.php); NULL = default order.
+    addColumnIfMissing($pdo, 'products', 'sectionOrder', "JSON DEFAULT NULL AFTER `documents`");
+
     @file_put_contents(SCHEMA_VERSION_FILE, (string)SCHEMA_VERSION);
 }
 

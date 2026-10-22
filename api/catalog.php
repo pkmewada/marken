@@ -1,6 +1,7 @@
 <?php
 // Emits the CATEGORIES / PRODUCTS globals the front-end scripts expect (previously hardcoded in js/data.js).
 require_once dirname(__DIR__) . '/app/db.php';
+require_once dirname(__DIR__) . '/app/product-sections.php';
 
 header('Content-Type: application/javascript; charset=utf-8');
 header('Cache-Control: no-cache');
@@ -27,6 +28,7 @@ try {
             'documents'       => fromJson($r['documents']),
             'metaTitle'       => $r['metaTitle'],
             'metaDescription' => $r['metaDescription'],
+            'sectionOrder'    => normalizeSectionOrder(fromJson($r['sectionOrder'])),
         ], fn($v) => $v !== null && $v !== '' && $v !== []);
     }
 } catch (Throwable $e) {

@@ -31,6 +31,15 @@ if (!product) {
   const mailto = (subject, body) =>
     `mailto:info@markenworld.com?subject=${encodeURIComponent(subject)}${body ? `&body=${encodeURIComponent(body)}` : ""}`;
 
+  // Section order saved in the admin (normalised by api/catalog.php: every key once, hero first).
+  // The hero sits outside <main> and the breadcrumb is not a section, so neither ever moves.
+  // Nodes are moved before anything is wired up; moving keeps ids, anchors and listeners intact.
+  const main = document.querySelector(".page-wrap main");
+  (product.sectionOrder || []).forEach((key) => {
+    const section = main.querySelector(`:scope > [data-section="${CSS.escape(key)}"]`);
+    if (section) main.appendChild(section);
+  });
+
   document.title = `${product.name} | MarkEn`;
   document.querySelector('meta[name="description"]').setAttribute(
     "content",
@@ -124,7 +133,8 @@ if (!product) {
       .map((a) => `<li>${a}</li>`)
       .join("");
   } else {
-    applicationsSection.style.display = "none";
+    // Removed rather than hidden so the section-spacing sibling rules in product-details.css skip it.
+    applicationsSection.remove();
   }
 
   // Certifications (company-wide, shown on every product)
