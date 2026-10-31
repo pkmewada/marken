@@ -20,6 +20,8 @@ products.html               Product catalogue/listing (filter + search)
 product-details.html        Single product page (see §7)
 blog.html                   Blog listing (filter + search)
 blog-details.html           Single blog article page
+about-us.html, certifications.html, careers.html, job-details.html, service-center.html,
+events.html, event-details.html   Company pages — see §17 (built from blog.html's chrome)
 css/
   base.css                  Design tokens, resets, .container, .btn*, .reveal — loaded on every page
   header.css                 Site header, nav, mega menu, mobile menu — loaded on every page
@@ -30,6 +32,7 @@ css/
   blog.css                    Shared blog card component + blog.html listing styles (also loaded by blog-details.html and index.html)
   blog-details.css            blog-details.html-only
   product-details.css         product-details.html-only (also overrides the shared hero for this page, see §8)
+  pages.css                   Company pages (§17), loaded after home.css (reuses .section/.section-head/.stats/.contact-us__form)
 app/                         Shared PHP (denied over HTTP by app/.htaccess)
   config.php                 DB credentials, admin user + bcrypt hash, upload settings — gitignored, per-server;
                              config.example.php is the committed template (add new settings to both)
@@ -40,6 +43,9 @@ app/                         Shared PHP (denied over HTTP by app/.htaccess)
   public-api.php             Shared guards for public form endpoints: readPublicForm(), emailError(), rateLimit(), jsonOut()
   html-sanitizer.php         sanitizeHtml() allowlist sanitizer for blog rich text (DOMDocument) + isSafeUrl()
   product-sections.php       Product page section keys + order rules (normalize / strict parse / DB value) — see §16
+  company.php                Careers/service centers/events constants (resume dir + types, statuses, SERVICE_TYPES,
+                             EVENT_PHASE_SQL, JOB_OPEN_SQL) — committed, NOT in config.php — see §17
+storage/resumes/             Job application resumes (gitignored; storage/.htaccess denies all HTTP; served by admin/resume.php)
   blog-seed.php / .json      importBlogSeed(): idempotent import of the original static posts (blog-seed.json = exact export of js/blog-data.js)
 api/
   catalog.php                Emits `const CATEGORIES = …; const PRODUCTS = …;` as JavaScript (published products only)
@@ -48,6 +54,8 @@ api/
   document-request.php       Product page doc cards → emails the document (attached if uploaded) + logs to documentRequests
   enquiry.php                Homepage contact form → enquiries
   newsletter.php             Footer newsletter → newsletterSubscribers
+  careers.php / events.php / service-centers.php   Public JSON for §17 pages (published/open records only)
+  job-application.php        Multipart Apply Now form → jobApplications + storage/resumes/ (api/.user.ini raises upload to 6M)
 admin/                       PHP admin panel — see §13
 uploads/                     Files uploaded from the admin (script execution denied by uploads/.htaccess)
 js/
@@ -59,8 +67,12 @@ js/
   blog-listing.js             blog.html-only: renders/filters the blog grid
   blog-details.js             blog-details.html-only: renders one article from ?slug=, builds JSON-LD
   product-details.js          product-details.html-only: renders one product from ?slug=
+  company.js                  Shared by §17 pages: esc, paragraphs, fetchApi, formatDate/Time, map URLs, openLightbox/openGallery,
+                              [data-gallery] / [data-youtube] triggers, revealInjected, pinAnchorLinks
+  about.js, careers.js, job-details.js, service-center.js, events.js, event-details.js   one per §17 page
 images/
   logo.svg, hero-poster.jpg
+  about/, certifications/, clients/   Media copied from markenworld.com (About Us page, 20 certification logos, 72 client logos)
   products/*.webp             Product photography (studio shots, light background)
   banners/*.webp              Category/marketing banner photography (has promotional copy baked into some pixels)
 videos/hero.mp4               Homepage hero video (generated from product stills by scripts/generate-hero-video.mjs)
@@ -75,7 +87,7 @@ No `node_modules` output ships to the site; the two npm scripts are run manually
 
 ## 3. Page Architecture
 
-This is a classic static MPA: **every page inlines its own copy of the header, mobile-menu, and footer markup** — there is no include/templating system (no PHP includes, no SSI, no client-side templating for these). All 5 HTML files contain byte-for-byte identical `<header class="site-header">…</header>` and `<div class="mobile-menu">…</div>` blocks, and near-identical `<footer class="site-footer">…</footer>` blocks (product-details.html and blog.html/blog-details.html/products.html footers add `id="contact"` to `<footer>`; the footer inside product-details.html is nested one level deeper inside `.page-wrap`).
+This is a classic static MPA: **every page inlines its own copy of the header, mobile-menu, and footer markup** — there is no include/templating system (no PHP includes, no SSI, no client-side templating for these). All 12 HTML files contain byte-for-byte identical `<header class="site-header">…</header>` and `<div class="mobile-menu">…</div>` blocks, and near-identical `<footer class="site-footer">…</footer>` blocks (product-details.html and blog.html/blog-details.html/products.html footers add `id="contact"` to `<footer>`; the footer inside product-details.html is nested one level deeper inside `.page-wrap`).
 
 Two distinct page layout patterns exist:
 
@@ -99,14 +111,14 @@ Every page loads `css/base.css`, `css/header.css`, `css/footer.css`, plus its ow
 
 No modules, no bundler — plain global-scope scripts loaded in `<script>` tags at the bottom of `<body>`, relying on load order for shared globals.
 
-- **`main.js`** (every page): header scroll toggle (adds `.is-solid` to `.site-header` once `window.scrollY > 10`, or immediately if the page has no `.hero`; adds `.is-compact` once `window.scrollY > 10` on every page — on desktop (>1024px) `header.css` then collapses `.header-main` and floats `.header-nav` centered into the utility bar, and shows the `a.nav-home` "Home" link that every page's header-nav carries; below 1024px the full header with the burger stays), mega-menu hover-to-open, mobile menu open/close (the overlay scrolls on its own; "Products" stays a link and the chevron `.mobile-menu__toggle` expands/collapses `.mobile-menu__panel`, collapsed by default; overlay ends with a "Make an Enquiry" button + SVG social icons), **header categories** (fetches `api/categories.php` and rebuilds `.mega-menu__grid` and `.mobile-menu__categories` from the DB; inserts an `hr.mega-menu__divider` before every new row of 4; the hardcoded category links in each HTML file are only a fallback if the request fails), a generic `IntersectionObserver` that adds `.is-visible` to `.reveal` elements present at initial load, the homepage "our story" collage carousel (guarded — no-ops if `.collage__nav` isn't present), and the newsletter form handler (guarded similarly).
+- **`main.js`** (every page): header scroll toggle (adds `.is-solid` to `.site-header` once `window.scrollY > 10`, or immediately if the page has no `.hero`; adds `.is-compact` once `window.scrollY > 10` on every page — on desktop (>1024px) `header.css` then collapses `.header-main` and floats `.header-nav` centered into the utility bar, and shows the `a.nav-home` "Home" link that every page's header-nav carries; below 1024px the full header with the burger stays), mega-menu hover-to-open, mobile menu open/close (the overlay scrolls on its own; "Products" stays a link and the chevron `.mobile-menu__toggle` expands/collapses `.mobile-menu__panel`, collapsed by default; overlay ends with a "Make an Enquiry" button + SVG social icons), **header categories** (fetches `api/categories.php` and rebuilds `.mega-menu__grid` and `.mobile-menu__categories` from the DB; inserts an `hr.mega-menu__divider` before every new row of 4; the hardcoded category links in each HTML file are only a fallback if the request fails), a generic `IntersectionObserver` that adds `.is-visible` to `.reveal` elements present at initial load, the `.stats` count-up (rAF ease-out from 0 to `data-count` + `data-suffix` when the band enters the viewport; shared by index.html and about-us.html), the homepage "our story" collage carousel (guarded — no-ops if `.collage__nav` isn't present), and the newsletter form handler (guarded similarly).
 - **`api/catalog.php` → `data.js`** (products, product-details): `api/catalog.php` is loaded as a `<script>` and defines the `CATEGORIES` and `PRODUCTS` globals from MySQL (product keys: `slug`, `name`, `category`, `image`, `featured`, `description`, `fullDescription`, `gallery`, `features`, `applications`, `specifications`, `certifications`, `documents`, `metaTitle`, `metaDescription` — empty fields are omitted). `data.js` then defines `getCategory()`, `getProduct()`, `getProductsByCategory()`, `getRelatedProducts()`. Draft products are never emitted.
 - **`blog-render.js`** (index, blog, blog-details): `fetchBlog(params)` (GET `api/blog.php`, throws `Error` with `.status` and a user-facing message), the shared `blogCardHTML(post)` card template (escapes every field via `escBlog()`), and `formatBlogDate()`. The homepage grid (inline script in index.html) calls `fetchBlog({ featured: 1, limit: 3 })`.
 - **`products-page.js`** (products.html only): renders the category filter buttons from `CATEGORIES` (only "All Products" is static in the HTML), reads the category from the clean URL `/products/{slug}` (legacy `?category=` still read), renders/filters `.products-grid` client-side, and writes `products` / `products/{slug}` back via `history.replaceState`, resolved against `document.baseURI`. Root `.htaccess` rewrites `/products/{slug}` → `products.html?category=` and 301s old `products(.html)?category=x` links to the clean URL. Like product-details.html, products.html writes a `<base href>` at the site root as the first thing in `<head>` (the clean URL adds a path segment) and the script re-points `#anchor` links. All category links site-wide use `products/{slug}` (relative to the root).
 - **`blog-listing.js`** (blog.html only): fetches all published cards + active categories once from `api/blog.php`, renders the category buttons (only "All Articles" is static in the HTML), then filters/searches client-side; `?category=` is read and written via `history.replaceState`. Loading/empty/error messages reuse the `.blog-empty` paragraph.
 - **`blog-details.js`** (blog-details.html only): reads the slug from the clean URL `/blog-details/{slug}` (legacy `?slug=` still read) plus `?preview=1`, fetches that one post from `api/blog.php?slug=`, populates breadcrumb/title/meta (metaTitle → title fallback, metaDescription → excerpt)/author/cover/body (server-sanitized HTML)/CTA (related product, or "Make an Enquiry")/related articles, and injects a `BlogPosting` JSON-LD block. A 404 renders an in-page "Article not found" state with `noindex` and the 3 latest posts (no redirect). Re-runs a fresh `IntersectionObserver` over freshly-injected `.reveal` elements (main.js's own observer already ran before this content existed).
 - **`product-details.js`** (product-details.html only): reads `?slug=`, redirects to `products.html` if not found, otherwise first reorders the `<main>` sections by `product.sectionOrder` (§16), then populates hero/breadcrumb/media-slider/applications/certifications/documentation-links/FAQ. Also re-runs its own `IntersectionObserver` for the same "content injected after main.js ran" reason.
-- **Exception to the "external JS only" pattern**: `index.html` has four inline `<script>` blocks — the featured product grid + stats count-up (rAF, starts when `.stats` enters the viewport), the vertical slider (scroll-driven, nothing is intercepted: `#vsScroll` reserves `(slides-1) × 70vh` of extra scroll height via `--vs-extra`, the `.vertical-slider-section` inside it is `position: sticky` below the header (`--util-h` desktop, `--header-h` ≤1024px), and the scroll position inside it picks the target slide; the track steps one slide per 600ms towards the target, so a fast scroll still plays every slide in order; dots scroll the page to that slide), the cert-card accordion + contact form handler, and the homepage blog-grid render call. These exist only in index.html's markup, not in `js/`.
+- **Exception to the "external JS only" pattern**: `index.html` has four inline `<script>` blocks — the featured product grid + the Our Clients marquee (duplicates each `.clients__track` list, `aria-hidden` copies, so the CSS `translateX(-50%)` loop is seamless), the vertical slider (scroll-driven, nothing is intercepted: `#vsScroll` reserves `(slides-1) × 70vh` of extra scroll height via `--vs-extra`, the `.vertical-slider-section` inside it is `position: sticky` below the header (`--util-h` desktop, `--header-h` ≤1024px), and the scroll position inside it picks the target slide; the track steps one slide per 600ms towards the target, so a fast scroll still plays every slide in order; dots scroll the page to that slide), the cert-card accordion + contact form handler, and the homepage blog-grid render call. These exist only in index.html's markup, not in `js/`.
 
 **Initialization pattern**: every page-specific script (`product-details.js`, `blog-details.js`, `products-page.js`, `blog-listing.js`) executes top-level immediately on load (no `DOMContentLoaded` wrapper) — this works because the `<script>` tags sit at the end of `<body>`, after all the DOM they touch already exists.
 
@@ -116,7 +128,7 @@ No modules, no bundler — plain global-scope scripts loaded in `<script>` tags 
 |---|---|---|---|
 | Header (`.site-header`) | Duplicated inline in all 5 HTML files | `header.css` | `main.js` (solid + compact on scroll, mega menu, burger) |
 | Mobile menu (`.mobile-menu`) | Duplicated inline in all 5 HTML files | `header.css` | `main.js` |
-| Footer (`.site-footer`) | Duplicated inline in all 5 HTML files (near-identical; `id="contact"` varies) | `footer.css` | none (newsletter form handler in `main.js`) |
+| Footer (`.site-footer`) | Duplicated inline in all 12 HTML files (near-identical; `id="contact"` varies). Columns: Products, Other Links (Career, Events, Service Center), Company (About Us, Certificates, …), Get in Touch | `footer.css` | none (newsletter form handler in `main.js`) |
 | Buttons (`.btn`, `.btn-dark`, `.btn-light`, `.btn-fill`) | n/a (utility classes) | `base.css` | none |
 | Product card (`.product-card`) | Rendered via `productCardHTML()` in `products-page.js` | `products.css` | click → `product-details.html?slug=` |
 | Homepage featured grid (`#home-featured-grid`) | `.products-grid` in index.html, filled by an inline script: admin-featured products first, topped up at random to 8 | `products.css` (loaded by index.html) + `.featured__products` in `home.css` | links to `product-details/{slug}` |
@@ -204,9 +216,9 @@ No modules, no bundler — plain global-scope scripts loaded in `<script>` tags 
 ## 10. Development Conventions
 
 - Plain HTML/CSS/JS, no build step — edit files directly, refresh the browser.
-- Cache-busting via `?v=NNNN` query strings (currently `?v=2169`, one shared value; the admin's own `assets/admin.css`/`admin.js` have separate `?v=` numbers in `layout-top.php`/`layout-bottom.php`) on every `<link>`/`<script>` tag referencing `css/`/`js/` files — bump it repo-wide on **every deploy that changes CSS/JS**: the live host (Hostinger, hyther.in/marken) serves assets with `Cache-Control: max-age=604800` (7 days), so an unbumped file keeps returning visitors on the old version (local WAMP doesn't cache, which hides this).
+- Cache-busting via `?v=NNNN` query strings (currently `?v=2170`, one shared value; the admin's own `assets/admin.css`/`admin.js` have separate `?v=` numbers in `layout-top.php`/`layout-bottom.php`) on every `<link>`/`<script>` tag referencing `css/`/`js/` files — bump it repo-wide on **every deploy that changes CSS/JS**: the live host (Hostinger, hyther.in/marken) serves assets with `Cache-Control: max-age=604800` (7 days), so an unbumped file keeps returning visitors on the old version (local WAMP doesn't cache, which hides this).
 - BEM-ish naming with page-scoped prefixes: `pd-` (product-details), `bd-` (blog-details), `vs-` (homepage vertical slider), unprefixed for genuinely shared components (`.site-header`, `.site-footer`, `.btn`, `.product-card`, `.blog-card`).
-- Header/mobile-menu/footer markup is intentionally copy-pasted into every HTML file (no templating system exists) — any edit to shared chrome must be manually replicated across all 5 HTML files or pages will visually diverge.
+- Header/mobile-menu/footer markup is intentionally copy-pasted into every HTML file (no templating system exists) — any edit to shared chrome must be manually replicated across all 12 HTML files or pages will visually diverge.
 - Product/category data and blog posts/blog categories live in MySQL and are edited through the admin panel. To change the *initial* seed catalogue, edit `app/schema.php`; the initial blog seed is `app/blog-seed.json`.
 - Contact form, footer newsletter and product document requests POST to `api/*.php` (see §14). The hero CTAs (Request a Quote / Enquire Now / WhatsApp) are still `mailto:`/`wa.me` links.
 - Source comments in this codebase explain **why**, not what (e.g. the hero.css pinned-hero comment, the product-details.css `object-fit` rationale, the `optimize-images.mjs`/`generate-hero-video.mjs` asset-choice comments) — match that style for any new non-obvious code.
@@ -243,6 +255,11 @@ admin/
   enquiries.php      "Contact Enquiries": list, status change, delete (filled by the homepage contact form)
   document-requests.php  Product document leads (email, product, document, mail status) + CSV export
   newsletter.php     Footer newsletter subscribers + CSV export
+  jobs.php / job-form.php            Job openings list (status incl. Expired) + create/edit (/admin/jobs/new, /admin/jobs/edit/{slug})
+  job-applications.php / resume.php  Applications (filter by job/status, status select, cover letter, delete also unlinks
+                                     the resume) + login-only resume download (attachment, nosniff)
+  service-centers.php / service-center-form.php   Directory list + create/edit (/admin/service-centers/new|edit/{slug})
+  events.php / event-form.php        Events list (phase badge, pin = manual override) + create/edit incl. multi-image gallery
   upload.php         JSON upload endpoint used by the forms → uploads/ (images/docs 10 MB, MP4/WebM video 50 MB).
                      PHP's 2 MB default is raised for admin/ only: admin/.user.ini (FastCGI — WAMP runs PHP via
                      mod_fcgid, which ignores php_value) and an <IfModule mod_php.c> block in admin/.htaccess
@@ -305,6 +322,18 @@ Admins drag the product page sections into any order per product; the Hero is lo
 - **Admin UI** (`product-form.php` card + `.section-order*` styles in `admin.css`): dependency-free pointer-event drag on the grip button (mouse + touch, `touch-action: none`) and ArrowUp/ArrowDown on the focused grip. The hero row has no grip and rows are never inserted above it. Save button is enabled only with unsaved changes, disabled while saving; SweetAlert toast only after the server confirms; on failure the error is shown, the DB keeps the previous order and the list stays "Unsaved changes". Concurrency: last write wins, like the rest of the admin.
 - **Public page**: `api/catalog.php` emits `sectionOrder` (always a complete normalized list) on every product; `product-details.js` appends each `main > [data-section]` in that order before wiring anything up (moving nodes keeps ids, anchors like `#pd-documentation`, and listeners). `product-details.css` adds top padding to `.pd-slider` / `.pd-applications` when they follow a grey band (`.pd-certifications` / `.pd-documentation`), since they normally only pad their bottom.
 - **Testing**: log in, edit a product, reorder, save, reload (order persists), open `/product-details/{slug}` and check the section order; other products keep theirs. Invalid requests: POST `admin/product-sections` with `{"product":slug,"order":[…]}` and a hero-not-first / duplicate / unknown key → 422.
+
+## 17. Company Pages (About, Certifications, Careers, Service Center, Events)
+
+Plain pages (no `.hero` → header always solid). All load `base, header, home, pages, footer` CSS and `main.js` + `company.js` + their own script. Header nav: "Certificates" → `certifications`, "About Us" → `about-us`; footer "Other Links" → `careers`, `events`, `service-center`. Links are extensionless (root `.htaccess` maps `/x` → `x.html`).
+
+- **Shared chrome**: the 7 pages were generated from `blog.html`'s header/mobile-menu/footer (no build step remains — they are normal static files now; edit chrome in all 12 files). Top section is `.page-hero` (in-flow, `margin-top: var(--header-h)`, photo + navy scrim); detail pages use `<main class="pg-detail">` (padding for the fixed header).
+- **Static content**: `about-us.html` = markenworld.com/about-us text verbatim (reordered: hero → "The Mark of Excellence!" ticker → Welcome → `.stats` band → Our Journey (3 cards, all play YouTube `FQz0Tfz_GnM` in a lightbox) → Mission/Vision → Esteemed Customers → Industry Expertise (cards rebuilt from `api/categories.php` by `about.js`) → Pioneer Supplier accreditation list → CTA). `certifications.html` = overview + WHO PQS highlight + 20-logo gallery (`[data-gallery="certs"]` buttons → `openGallery`). Certification descriptions only use MarkEn's own wording (homepage cert cards / reference list); logos without a sourced description show the name only.
+- **Homepage**: "Certified & Trusted" stories were replaced by **Our Clients** (`#clients`, two `.clients__track` rows of the 72 reference logos, `images/clients/client-NN.webp`, names in `alt`/`title`; pause on hover, reduced-motion → static scroll). Stats band restyled on `--gradient` (values/counter unchanged). The certifications section gained a "View All Certifications" button → `certifications`.
+- **DB (schema v7)**: `jobs` (slug, title, department, location, employmentType enum, experience, description, responsibilities/qualifications JSON lists, applicationInstructions, deadline, status), `jobApplications` (jobId FK **ON DELETE SET NULL** + `jobTitle` snapshot, fullName, email, phone, currentLocation, resumeFile, resumeOriginalName, coverLetter, status `new|under-review|shortlisted|rejected|selected`, ip), `serviceCenters` (slug, name, image, address, locality, city, state, phone, email, mapUrl, productCategories JSON = category slugs, serviceTypes JSON = `SERVICE_TYPES`, serviceInfo, status, sortOrder), `events` (slug, title, excerpt, description, bannerImage, gallery JSON, startDate/endDate, startTime/endTime, venue, address, city, mapUrl, contactInfo, eventStatus `auto|upcoming|ongoing|completed|cancelled`, status).
+- **Rules**: a job is public while `JOB_OPEN_SQL` (published and deadline not passed — admin shows "Expired"). Event phase = `EVENT_PHASE_SQL` (admin override wins, else DB date: before start → upcoming, until end/start → ongoing, then completed); `/events` lists upcoming+ongoing, and completed+cancelled under Past Events. Admin text fields are plain text: blank-line paragraphs via `paragraphs()`, lists one item per line. Maps: "Get Directions" = admin Google Maps link or a directions search; the embed is keyless `maps.google.com/maps?q=…&output=embed` on the address.
+- **Applications** (`api/job-application.php`): `readPublicForm()` bot guards, name/email/phone/location validation, resume required, ≤5 MB, type by `finfo` (PDF/DOC/DOCX), stored as random name in `storage/resumes/`; duplicates (same job + email within 24h) keep one row; 5/hour per IP. No email is sent (not requested).
+- **Detail URLs**: `/careers/{slug}` → `job-details.html?slug=`, `/events/{slug}` → `event-details.html?slug=` (root `.htaccess`); both pages use the same `document.write('<base…>')` trick as blog-details (Chrome's preload scanner fetches a few assets against the wrong base first — harmless 404s, same as the existing detail pages). JSON-LD: `JobPosting` / `Event`. Unknown or closed slug → in-page "not available" state with `noindex`.
 
 ## 12. Future Claude Instructions
 

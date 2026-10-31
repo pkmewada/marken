@@ -136,6 +136,36 @@ if (revealTargets.length) {
   revealTargets.forEach((el) => observer.observe(el));
 }
 
+// Stats count-up (homepage + About Us): one rAF loop per number with ease-out; only textContent
+// changes per frame, and tabular figures keep the width from jittering, so it stays smooth.
+const statsBand = document.querySelector(".stats");
+if (statsBand) {
+  const values = statsBand.querySelectorAll(".stats__value[data-count]");
+  const show = (el, n) => (el.textContent = n + (el.dataset.suffix || ""));
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    values.forEach((el) => show(el, el.dataset.count));
+  } else {
+    const run = (el) => {
+      const target = +el.dataset.count;
+      const duration = 2000;
+      let start = null;   // taken from the first frame: rAF timestamps can predate performance.now()
+      const tick = (now) => {
+        start ??= now;
+        const t = Math.min((now - start) / duration, 1);
+        show(el, Math.round(target * (1 - Math.pow(1 - t, 3))));
+        if (t < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+    const statsObserver = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      values.forEach(run);
+      statsObserver.disconnect();
+    }, { threshold: 0.3 });
+    statsObserver.observe(statsBand);
+  }
+}
+
 // Milestone collage carousel (text cycles through real MarkEn facts;
 // images stay fixed since we don't have per-slide photography for each)
 const collageNav = document.querySelector(".collage__nav");

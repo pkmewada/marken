@@ -15,6 +15,14 @@ $nav = [
         'blogs'           => ['blogs',           'bi-journal-richtext', 'Blog Posts'],
         'blog-categories' => ['blog-categories', 'bi-tags',             'Blog Categories'],
     ],
+    'Careers' => [
+        'jobs'             => ['jobs',             'bi-briefcase',      'Job Openings'],
+        'job-applications' => ['job-applications', 'bi-person-lines-fill', 'Job Applications'],
+    ],
+    'Company' => [
+        'events'          => ['events',          'bi-calendar-event', 'Events'],
+        'service-centers' => ['service-centers', 'bi-geo-alt',        'Service Centers'],
+    ],
     'CRM' => [
         'enquiries'         => ['enquiries',         'bi-envelope',       'Contact Enquiries'],
         'document-requests' => ['document-requests', 'bi-file-earmark-arrow-down', 'Document Requests'],
@@ -34,7 +42,7 @@ $nav = [
   <title><?= h($pageTitle) ?> — MarkEn Admin</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="assets/admin.css?v=3">
+  <link rel="stylesheet" href="assets/admin.css?v=4">
 </head>
 <body>
 <aside class="mk-sidebar">

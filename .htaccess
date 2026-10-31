@@ -19,6 +19,10 @@ RewriteRule ^blog-details/([^/]+)/?$ blog-details.html?slug=$1 [L,QSA]
 # Clean product-detail URLs: /product-details/slug → product-details.html?slug=slug
 RewriteRule ^product-details/([^/]+)/?$ product-details.html?slug=$1 [L,QSA]
 
+# Clean job / event URLs: /careers/slug → job-details.html, /events/slug → event-details.html
+RewriteRule ^careers/([^/]+)/?$ job-details.html?slug=$1 [L,QSA]
+RewriteRule ^events/([^/]+)/?$ event-details.html?slug=$1 [L,QSA]
+
 # Clean category URLs: /products/slug → products.html?category=slug
 RewriteRule ^products/([^/]+)/?$ products.html?category=$1 [L,QSA]
 

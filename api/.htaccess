@@ -1,1 +1,7 @@
 Options -Indexes -MultiViews
+
+# Job application resumes can be up to 5 MB (see api/.user.ini); PHP's default is 2 MB.
+<IfModule mod_php.c>
+  php_value upload_max_filesize 6M
+  php_value post_max_size 8M
+</IfModule>

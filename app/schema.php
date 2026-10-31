@@ -166,6 +166,104 @@ function migrateSchema(PDO $pdo, bool $freshInstall = false): void {
     // v6: per-product section order of the product page (app/product-sections.php); NULL = default order.
     addColumnIfMissing($pdo, 'products', 'sectionOrder', "JSON DEFAULT NULL AFTER `documents`");
 
+    // v7: careers, job applications, service centers, events.
+    $pdo->exec("CREATE TABLE IF NOT EXISTS `jobs` (
+        `id`                      INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        `slug`                    VARCHAR(150) NOT NULL,
+        `title`                   VARCHAR(200) NOT NULL,
+        `department`              VARCHAR(100) NOT NULL,
+        `location`                VARCHAR(150) NOT NULL,
+        `employmentType`          ENUM('full-time','part-time','contract','internship') NOT NULL DEFAULT 'full-time',
+        `experience`              VARCHAR(100) DEFAULT NULL,
+        `description`             TEXT,
+        `responsibilities`        JSON DEFAULT NULL,
+        `qualifications`          JSON DEFAULT NULL,
+        `applicationInstructions` TEXT,
+        `deadline`                DATE DEFAULT NULL,
+        `status`                  ENUM('published','draft') NOT NULL DEFAULT 'draft',
+        `createdAt`               DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updatedAt`               DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `uqSlug` (`slug`),
+        KEY `idxStatusDeadline` (`status`, `deadline`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // SET NULL + jobTitle snapshot: deleting a job keeps its applications (and their resumes).
+    $pdo->exec("CREATE TABLE IF NOT EXISTS `jobApplications` (
+        `id`                 INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        `jobId`              INT UNSIGNED DEFAULT NULL,
+        `jobTitle`           VARCHAR(200) NOT NULL,
+        `fullName`           VARCHAR(150) NOT NULL,
+        `email`              VARCHAR(200) NOT NULL,
+        `phone`              VARCHAR(30)  NOT NULL,
+        `currentLocation`    VARCHAR(150) NOT NULL,
+        `resumeFile`         VARCHAR(255) NOT NULL,
+        `resumeOriginalName` VARCHAR(255) NOT NULL,
+        `coverLetter`        TEXT,
+        `status`             ENUM('new','under-review','shortlisted','rejected','selected') NOT NULL DEFAULT 'new',
+        `ip`                 VARCHAR(45) DEFAULT NULL,
+        `createdAt`          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        KEY `idxJob` (`jobId`),
+        KEY `idxStatus` (`status`),
+        KEY `idxEmail` (`email`),
+        KEY `idxIpCreated` (`ip`, `createdAt`),
+        CONSTRAINT `fkApplicationsJob` FOREIGN KEY (`jobId`) REFERENCES `jobs` (`id`)
+            ON DELETE SET NULL ON UPDATE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // productCategories = category slugs, serviceTypes = SERVICE_TYPES values (app/config.php).
+    $pdo->exec("CREATE TABLE IF NOT EXISTS `serviceCenters` (
+        `id`                INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        `slug`              VARCHAR(150) NOT NULL,
+        `name`              VARCHAR(200) NOT NULL,
+        `image`             VARCHAR(500) DEFAULT NULL,
+        `address`           VARCHAR(500) NOT NULL,
+        `locality`          VARCHAR(150) DEFAULT NULL,
+        `city`              VARCHAR(100) NOT NULL,
+        `state`             VARCHAR(100) NOT NULL,
+        `phone`             VARCHAR(50)  DEFAULT NULL,
+        `email`             VARCHAR(200) DEFAULT NULL,
+        `mapUrl`            VARCHAR(1000) DEFAULT NULL,
+        `productCategories` JSON DEFAULT NULL,
+        `serviceTypes`      JSON DEFAULT NULL,
+        `serviceInfo`       TEXT,
+        `status`            ENUM('published','draft') NOT NULL DEFAULT 'published',
+        `sortOrder`         INT NOT NULL DEFAULT 0,
+        `createdAt`         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updatedAt`         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `uqSlug` (`slug`),
+        KEY `idxStatusState` (`status`, `state`, `city`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // eventStatus 'auto' = derived from the dates (EVENT_PHASE_SQL in app/events.php); other values are admin overrides.
+    $pdo->exec("CREATE TABLE IF NOT EXISTS `events` (
+        `id`          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        `slug`        VARCHAR(150) NOT NULL,
+        `title`       VARCHAR(200) NOT NULL,
+        `excerpt`     VARCHAR(500) NOT NULL,
+        `description` TEXT,
+        `bannerImage` VARCHAR(500) NOT NULL,
+        `gallery`     JSON DEFAULT NULL,
+        `startDate`   DATE NOT NULL,
+        `endDate`     DATE DEFAULT NULL,
+        `startTime`   TIME DEFAULT NULL,
+        `endTime`     TIME DEFAULT NULL,
+        `venue`       VARCHAR(200) NOT NULL,
+        `address`     VARCHAR(500) DEFAULT NULL,
+        `city`        VARCHAR(100) NOT NULL,
+        `mapUrl`      VARCHAR(1000) DEFAULT NULL,
+        `contactInfo` VARCHAR(500) DEFAULT NULL,
+        `eventStatus` ENUM('auto','upcoming','ongoing','completed','cancelled') NOT NULL DEFAULT 'auto',
+        `status`      ENUM('published','draft') NOT NULL DEFAULT 'draft',
+        `createdAt`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updatedAt`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `uqSlug` (`slug`),
+        KEY `idxStatusStart` (`status`, `startDate`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
     @file_put_contents(SCHEMA_VERSION_FILE, (string)SCHEMA_VERSION);
 }
 
