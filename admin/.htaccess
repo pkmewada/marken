@@ -21,6 +21,12 @@ RewriteRule ^categories/edit/([a-z0-9-]+)/?$ categories.php?edit=$1 [L,QSA]
 RewriteRule ^blogs/new/?$ blog-form.php [L,QSA]
 RewriteRule ^blogs/edit/([a-z0-9-]+)/?$ blog-form.php?slug=$1 [L,QSA]
 RewriteRule ^blog-categories/edit/([a-z0-9-]+)/?$ blog-categories.php?edit=$1 [L,QSA]
+RewriteRule ^jobs/new/?$ job-form.php [L,QSA]
+RewriteRule ^jobs/edit/([a-z0-9-]+)/?$ job-form.php?slug=$1 [L,QSA]
+RewriteRule ^service-centers/new/?$ service-center-form.php [L,QSA]
+RewriteRule ^service-centers/edit/([a-z0-9-]+)/?$ service-center-form.php?slug=$1 [L,QSA]
+RewriteRule ^events/new/?$ event-form.php [L,QSA]
+RewriteRule ^events/edit/([a-z0-9-]+)/?$ event-form.php?slug=$1 [L,QSA]
 
 # /admin/page → page.php
 RewriteCond %{REQUEST_FILENAME} !-f

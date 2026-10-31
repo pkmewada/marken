@@ -83,6 +83,12 @@ body { background: #f4f6f9; }
 .badge-published, .badge-replied { background: #d1fae5; color: #065f46; }
 .badge-draft, .badge-new { background: #fef3c7; color: #92400e; }
 .badge-closed { background: #e5e7eb; color: #374151; }
+/* Events, jobs, job applications */
+.badge-upcoming, .badge-under-review { background: #dbeafe; color: #1e40af; }
+.badge-ongoing, .badge-shortlisted { background: #ede9fe; color: #5b21b6; }
+.badge-completed, .badge-expired { background: #e5e7eb; color: #374151; }
+.badge-cancelled, .badge-rejected { background: #fee2e2; color: #991b1b; }
+.badge-selected { background: #d1fae5; color: #065f46; }
 
 /* Image upload drop zone */
 .drop-zone {
