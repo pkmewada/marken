@@ -150,8 +150,8 @@
   text-transform: uppercase;
   color: var(--navy);
 }
-/* ---- Our Clients: two continuously looping logo rows ---- */
-/* Each list is duplicated by the inline script; translating by -50% lands exactly on the copy,
+/* ---- Our Clients: one continuously looping logo row (all 72 logos) ---- */
+/* The list is duplicated by the inline script; translating by -50% lands exactly on the copy,
    so the loop has no visible jump. Spacing is margin (not flex gap) for the same reason. */
 .clients {
   overflow: hidden;
@@ -172,10 +172,7 @@
 .clients__track {
   display: flex;
   width: max-content;
-  animation: clients-loop 150s linear infinite;
-}
-.clients__row--reverse .clients__track {
-  animation-direction: reverse;
+  animation: clients-loop 300s linear infinite;   /* 72 logos: same speed the 36-logo rows had at 150s */
 }
 .clients__marquee:hover .clients__track {
   animation-play-state: paused;

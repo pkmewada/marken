@@ -21,9 +21,11 @@
 }
 
 /* Below 1024px the nav row only holds the burger + logo, so it doesn't need
-   the desktop height (which also stacks the nav links under the logo). */
+   the desktop height (which also stacks the nav links under the logo), and the
+   utility bar is hidden (header.css). */
 @media (max-width: 1024px) {
   :root {
+    --util-h: 0px;
     --nav-h: 72px;
   }
 }

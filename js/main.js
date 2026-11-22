@@ -215,6 +215,12 @@ if (collageNav && collageSlidesEl) {
   });
 }
 
+// Footer "back to top" (a button, not href="#": on pages with <base href> at the
+// site root a bare "#" would navigate to the homepage).
+document.querySelector(".site-footer__totop")?.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
 // Footer newsletter → api/newsletter.php. The status line is created here so
 // the footer markup (copied into every page) doesn't need to change.
 const newsletterForm = document.querySelector(".newsletter-form");
