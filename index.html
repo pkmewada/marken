@@ -9,13 +9,13 @@
     content="MarkEn — precision-engineered medical cold chain, blood bank, hospital furniture and critical care technology, trusted by 20,000+ healthcare institutions worldwide."
   />
   <title>MarkEn | Precision Medical Technology</title>
-  <link rel="stylesheet" href="css/base.css?v=2170" />
-  <link rel="stylesheet" href="css/header.css?v=2170" />
-  <link rel="stylesheet" href="css/hero.css?v=2170" />
-  <link rel="stylesheet" href="css/home.css?v=2170" />
-  <link rel="stylesheet" href="css/products.css?v=2170" />
-  <link rel="stylesheet" href="css/blog.css?v=2170" />
-  <link rel="stylesheet" href="css/footer.css?v=2170" />
+  <link rel="stylesheet" href="css/base.css?v=2171" />
+  <link rel="stylesheet" href="css/header.css?v=2171" />
+  <link rel="stylesheet" href="css/hero.css?v=2171" />
+  <link rel="stylesheet" href="css/home.css?v=2171" />
+  <link rel="stylesheet" href="css/products.css?v=2171" />
+  <link rel="stylesheet" href="css/blog.css?v=2171" />
+  <link rel="stylesheet" href="css/footer.css?v=2171" />
   <style>
     /* vertical slider – placed after Our Story section */
     /* .vs-scroll is taller than the slider (height set by the slider script) and the slider
@@ -184,7 +184,6 @@
       height: 100%;
       background: linear-gradient(90deg, #ffffff, rgba(255,255,255,0.5));
       width: 0%;
-      transition: width 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       box-shadow: 0 0 20px rgba(255,255,255,0.2);
     }
     
@@ -262,8 +261,7 @@
       flex-direction: column;
       height: 100%;
       width: 100%;
-      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);   /* = STEP_MS in the slider script */
-      will-change: transform;
+      will-change: transform;   /* no transition: the slider script moves it with the scroll */
     }
     
     /* Subtle vignette on images */
@@ -455,7 +453,7 @@
         <div class="container collage__grid">
           <div class="collage__images reveal">
             <img src="images/products/ult-deep-freezer-86.webp" alt="MarkEn ULT Deep Freezer" />
-            <img src="images/banners/who-pqs-banner.webp" alt="MarkEn WHO PQS accredited system" />
+            <img src="images/banners/blood-bank-range.webp" alt="MarkEn blood bank equipment range" />
             <img src="images/products/icu-7-function-bed.webp" alt="MarkEn ICU motorized bed" />
           </div>
           <div class="collage__copy reveal">
@@ -483,17 +481,32 @@
           {
             "eyebrow": "Our Story",
             "title": "25 Years of Precision Engineering",
-            "text": "From a single manufacturing unit in Nashik to a nationwide network, MarkEn has spent 25 years engineering cold chain, blood bank and critical care systems trusted by more than 20,000 healthcare institutions worldwide."
+            "text": "From a single manufacturing unit in Nashik to a nationwide network, MarkEn has spent 25 years engineering cold chain, blood bank and critical care systems trusted by more than 20,000 healthcare institutions worldwide.",
+            "images": [
+              ["images/products/ult-deep-freezer-86.webp", "MarkEn ULT Deep Freezer"],
+              ["images/banners/blood-bank-range.webp", "MarkEn blood bank equipment range"],
+              ["images/products/icu-7-function-bed.webp", "MarkEn ICU motorized bed"]
+            ]
           },
           {
             "eyebrow": "Our Reach",
             "title": "30+ Franchise Locations Nationwide",
-            "text": "With 500+ service centers across India, MarkEn ensures rapid support and maintenance for every system we manufacture — backed by our Nashik factory and Noida sales office."
+            "text": "With 500+ service centers across India, MarkEn ensures rapid support and maintenance for every system we manufacture — backed by our Nashik factory and Noida sales office.",
+            "images": [
+              ["images/about/mission-vision.webp", "MarkEn facility"],
+              ["images/banners/cold-storage.webp", "MarkEn cold storage solutions"],
+              ["images/about/private-healthcare.webp", "MarkEn equipment in private healthcare"]
+            ]
           },
           {
             "eyebrow": "Our Standards",
             "title": "The Only Indian Brand With 11+ WHO PQS Products",
-            "text": "MarkEn holds ISO 9001:2015, ISO 13485:2016, ISO 14001:2015 and WHO GMP certification — engineering trust into every device we build."
+            "text": "MarkEn holds ISO 9001:2015, ISO 13485:2016, ISO 14001:2015 and WHO GMP certification — engineering trust into every device we build.",
+            "images": [
+              ["images/products/ice-lined-refrigerator.webp", "MarkEn WHO PQS ice lined refrigerator"],
+              ["images/banners/flagship-products.webp", "MarkEn WHO PQS accredited flagship products"],
+              ["images/products/passive-cold-box.webp", "MarkEn WHO PQS passive cold box"]
+            ]
           }
         ]
       </script>
@@ -900,7 +913,12 @@
   </div>
 
   <script>
+    // Vertical slider, tied directly to the page scroll: while #vsScroll passes under
+    // the sticky slider, the track moves exactly with the scroll (no timers, no
+    // hijacking), so every slide passes in order and the page simply carries on
+    // scrolling after the last one — in both directions, with wheel, touch or keys.
     (function(){
+      const wrap = document.getElementById("vsScroll");
       const slider = document.getElementById("verticalSlider");
       const track = document.getElementById("vsTrack");
       const dotsBox = document.getElementById("vsDots");
@@ -908,97 +926,59 @@
       const topIndicator = document.getElementById("scrollTop");
       const bottomIndicator = document.getElementById("scrollBottom");
       const progressBar = document.getElementById("vsProgress");
-
-      if(!slider || !track) return;
+      if(!wrap || !slider || !track) return;
 
       const slides = track.querySelectorAll(".vs-slide");
       const total = slides.length;
-      const wrap = document.getElementById("vsScroll");
-      const STEP_MS = 600;      // = the track's CSS transition
-      const STEP_VH = 70;       // page scroll that advances one slide
-      let current = 0;
-      let target = 0;
-      let animating = false;
+      const STEP_VH = 80;       // page scroll per slide
+      let current = -1;
+      let ticking = false;
 
-      // Reserve the scroll distance the slides take (CSS adds it to the slider height).
+      // Reserve the scroll distance the slides take (CSS adds it to the wrapper height).
       wrap.style.setProperty("--vs-extra", `${(total - 1) * STEP_VH}vh`);
       const stepPx = () => window.innerHeight * STEP_VH / 100;
+      const stickyTop = () => parseFloat(getComputedStyle(slider).top) || 0;
 
-      // CREATE DOTS — a click scrolls the page to that slide's position
+      const dots = [];
       for(let i=0; i<total; i++){
-        let dot = document.createElement("span");
+        const dot = document.createElement("span");
         dot.className = "dot";
-        if(i===0) dot.classList.add("active");
-        dot.onclick = function(){
-          const wrapTop = wrap.getBoundingClientRect().top + window.scrollY - parseFloat(getComputedStyle(slider).top);
-          window.scrollTo({ top: wrapTop + i * stepPx() });
-        };
+        dot.addEventListener("click", () => {
+          const wrapTop = wrap.getBoundingClientRect().top + window.scrollY - stickyTop();
+          window.scrollTo({ top: wrapTop + i * stepPx(), behavior: "smooth" });
+        });
         dotsBox.appendChild(dot);
+        dots.push(dot);
       }
 
-      function updateUI(){
-        // Update dots
-        document.querySelectorAll("#vsDots .dot").forEach((dot,i)=>{
-          dot.classList.toggle("active", i===current);
-        });
-        
-        // Update counter
-        counter.innerHTML = String(current+1).padStart(2,"0") + " / " + String(total).padStart(2,"0");
-        
-        // Update scroll indicators
-        if(topIndicator){
-          topIndicator.classList.toggle("visible", current>0);
-        }
-        if(bottomIndicator){
-          bottomIndicator.classList.toggle("visible", current<total-1);
-        }
-        
-        // Update progress bar
-        if(progressBar){
-          const progress = ((current + 1) / total) * 100;
-          progressBar.style.width = progress + '%';
-        }
-        
-        // Update active class on slides for zoom effect
-        slides.forEach((slide, i) => {
-          slide.classList.toggle('active', i === current);
-        });
-      }
+      function update(){
+        ticking = false;
+        const scrolled = stickyTop() - wrap.getBoundingClientRect().top;
+        const pos = Math.max(0, Math.min(total - 1, scrolled / stepPx()));   // 0 … total-1, fractional
+        track.style.transform = `translateY(-${pos * 100}%)`;
+        if(progressBar) progressBar.style.width = ((pos + 1) / total * 100) + "%";
 
-      // Step one slide at a time towards the target, so even a fast scroll that jumps
-      // several slides plays each of them in order instead of skipping.
-      function stepTowardsTarget(){
-        if(animating || current === target) return;
-        current += Math.sign(target - current);
-        animating = true;
-        track.style.transform = `translateY(-${current * 100}%)`;
-        updateUI();
-        setTimeout(()=>{
-          animating = false;
-          stepTowardsTarget();
-        }, STEP_MS);
+        const i = Math.round(pos);
+        if(i === current) return;
+        current = i;
+        slides.forEach((slide, n) => slide.classList.toggle("active", n === i));
+        dots.forEach((dot, n) => dot.classList.toggle("active", n === i));
+        counter.textContent = String(i + 1).padStart(2, "0") + " / " + String(total).padStart(2, "0");
+        if(topIndicator) topIndicator.classList.toggle("visible", i > 0);
+        if(bottomIndicator) bottomIndicator.classList.toggle("visible", i < total - 1);
       }
-
-      // The scroll position inside .vs-scroll picks the slide. Native scrolling is never
-      // blocked (wheel, touch, keys, anchors all just scroll the page), so it can't get stuck.
       function onScroll(){
-        const scrolled = parseFloat(getComputedStyle(slider).top) - wrap.getBoundingClientRect().top;
-        target = Math.max(0, Math.min(total - 1, Math.round(scrolled / stepPx())));
-        stepTowardsTarget();
+        if(!ticking){ ticking = true; requestAnimationFrame(update); }
       }
       window.addEventListener("scroll", onScroll, { passive: true });
-
-      // INITIAL
-      track.style.transform = "translateY(0)";
-      updateUI();
-      onScroll();   // page may load already scrolled (reload, back button)
-
+      window.addEventListener("resize", onScroll);
+      update();   // page may load already scrolled (reload, back button)
     })();
   </script>
   <script src="api/catalog.php"></script>
-  <script src="js/data.js?v=2170"></script>
-  <script src="js/blog-render.js?v=2170"></script>
-  <script src="js/main.js?v=2170"></script>
+  <script src="js/data.js?v=2171"></script>
+  <script src="js/blog-render.js?v=2171"></script>
+  <script src="js/main.js?v=2171"></script>
   <script>
     document.querySelectorAll(".cert-card").forEach((card) => {
       const desc = card.querySelector(".cert-card__desc");

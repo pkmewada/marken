@@ -15,6 +15,16 @@
   line-height: 1.75;
 }
 
+/* ---- Hero: fill the whole viewport ----
+   hero.css's 92vh (shared with product-details) left an empty strip under the
+   homepage video, most visible on large screens. svh = the visible height on
+   mobile browsers, so the button isn't hidden behind the address bar. */
+.hero,
+.hero-spacer {
+  height: 100vh;
+  height: 100svh;
+}
+
 /* ---- Editorial collage (milestone story) ---- */
 .collage {
   background: var(--bg-soft);
@@ -33,6 +43,11 @@
   position: absolute;
   object-fit: cover;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.15);
+  transition: opacity 0.3s ease, transform 0.3s ease;   /* = the swap delay in main.js */
+}
+.collage__images.is-swapping img {
+  opacity: 0;
+  transform: scale(0.97);
 }
 .collage__images img:nth-child(1) {
   width: 62%;
@@ -404,8 +419,21 @@ a.contact-detail__value:hover {
     linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 48px 100%;
   pointer-events: none;
 }
+/* Soft colour glows behind the cards — a backdrop blur needs something to blur,
+   otherwise the glass reads as a flat tint. */
+.stats::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(22% 55% at 12% 30%, rgba(90, 170, 255, 0.45), transparent 70%),
+    radial-gradient(20% 50% at 55% 85%, rgba(140, 120, 255, 0.32), transparent 70%),
+    radial-gradient(18% 50% at 90% 40%, rgba(80, 220, 255, 0.3), transparent 70%);
+  pointer-events: none;
+}
 .stats__grid {
   position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 1rem;
@@ -419,15 +447,39 @@ a.contact-detail__value:hover {
   gap: 0.5rem;
   min-height: 250px;
   padding: 2.75rem 1rem 2rem;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(6px);
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  /* Frosted glass: translucent fill, blurred backdrop, bright top edge, drop shadow for depth. */
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.06) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  box-shadow:
+    0 18px 40px rgba(0, 10, 40, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
   /* Includes .reveal's opacity/transform, which this rule would otherwise override. */
-  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease), background 0.5s var(--ease), border-color 0.5s var(--ease);
+  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease), background 0.5s var(--ease), border-color 0.5s var(--ease), box-shadow 0.5s var(--ease);
+}
+/* Glossy sheen across the top-left of each card. */
+.stats__card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 45% 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.06) 40%, transparent 60%);
+  pointer-events: none;
+}
+.stats__card > * {
+  position: relative;
 }
 .stats__card:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.4);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.1) 100%);
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow:
+    0 26px 50px rgba(0, 10, 40, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
   transform: translateY(-4px);
 }
 .stats__card:nth-child(2) { transition-delay: 0.06s; }
@@ -443,8 +495,9 @@ a.contact-detail__value:hover {
   height: 64px;
   margin-bottom: 1rem;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 18px rgba(0, 10, 40, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.5);
   color: #fff;
 }
 .stats__icon svg {

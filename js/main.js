@@ -166,8 +166,8 @@ if (statsBand) {
   }
 }
 
-// Milestone collage carousel (text cycles through real MarkEn facts;
-// images stay fixed since we don't have per-slide photography for each)
+// Milestone collage carousel: each slide swaps the copy and, when it lists
+// "images" ([src, alt] per collage slot), the three photos with a short fade.
 const collageNav = document.querySelector(".collage__nav");
 const collageSlidesEl = document.getElementById("collage-slides");
 if (collageNav && collageSlidesEl) {
@@ -177,7 +177,13 @@ if (collageNav && collageSlidesEl) {
   const titleEl = copy.querySelector('[data-field="title"]');
   const textEl = copy.querySelector('[data-field="text"]');
   const counterEl = copy.querySelector('[data-field="counter"]');
+  const imagesBox = document.querySelector(".collage__images");
+  const imgEls = imagesBox ? imagesBox.querySelectorAll("img") : [];
   let index = 0;
+  let swapTimer;
+
+  // Warm the cache so a click shows the next photos without a blank flash.
+  slides.forEach((s) => (s.images || []).forEach(([src]) => { new Image().src = src; }));
 
   function renderSlide() {
     const s = slides[index];
@@ -185,6 +191,18 @@ if (collageNav && collageSlidesEl) {
     titleEl.textContent = s.title;
     textEl.textContent = s.text;
     counterEl.textContent = `${String(index + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
+    if (!s.images || !imgEls.length) return;
+    // Fade out, swap the sources, fade back in (timing = the CSS opacity transition).
+    clearTimeout(swapTimer);
+    imagesBox.classList.add("is-swapping");
+    swapTimer = setTimeout(() => {
+      imgEls.forEach((img, i) => {
+        if (!s.images[i]) return;
+        img.src = s.images[i][0];
+        img.alt = s.images[i][1];
+      });
+      imagesBox.classList.remove("is-swapping");
+    }, 300);
   }
 
   collageNav.querySelector('[data-dir="prev"]').addEventListener("click", () => {
