@@ -967,8 +967,21 @@
         if(topIndicator) topIndicator.classList.toggle("visible", i > 0);
         if(bottomIndicator) bottomIndicator.classList.toggle("visible", i < total - 1);
       }
+      // Once scrolling stops inside the slider range, settle on the nearest slide so
+      // it never rests showing half of two slides. Outside the range nothing moves.
+      let snapTimer;
+      function snap(){
+        const scrolled = stickyTop() - wrap.getBoundingClientRect().top;
+        const pos = scrolled / stepPx();
+        if(pos <= 0 || pos >= total - 1) return;
+        const target = Math.round(pos);
+        if(Math.abs(pos - target) < 0.01) return;
+        window.scrollBy({ top: (target - pos) * stepPx(), behavior: "smooth" });
+      }
       function onScroll(){
         if(!ticking){ ticking = true; requestAnimationFrame(update); }
+        clearTimeout(snapTimer);
+        snapTimer = setTimeout(snap, 150);
       }
       window.addEventListener("scroll", onScroll, { passive: true });
       window.addEventListener("resize", onScroll);
