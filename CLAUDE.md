@@ -10,7 +10,7 @@ MarkEn is a B2B medical-equipment manufacturer (cold chain, blood bank, hospital
 - **The database creates itself**: the first request that calls `db()` (`app/db.php`) and finds `marken_admin` missing runs `installDatabase()` from `app/schema.php`, which creates the DB and tables and seeds the original 4 categories + 24 products. No install step is needed.
 - `package.json` only holds **dev-only** tooling (`sharp`, `ffmpeg-static`) for one-off asset generation (`npm run optimize-images`, `npm run generate-hero-video`) — irrelevant to how the site runs in a browser.
 - **Products/categories live in MySQL** and are served to the front-end by `api/catalog.php`. **Blog posts/blog categories also live in MySQL** (`blogs`, `blogCategories`) and are served as JSON by `api/blog.php` — see §15. `js/blog-data.js` is the legacy static data, no longer loaded by any page.
-- "Forms" (contact, newsletter, quote/enquiry/document requests) have no server: they build `mailto:` links or a `wa.me` (WhatsApp) link client-side. There is no cart, checkout, or payment flow anywhere on the site — it's lead-generation, not e-commerce.
+- "Forms" (contact, newsletter, quote/enquiry/document requests) have no server: they build `mailto:` links or a `wa.me` (WhatsApp) link client-side. The site is mainly lead-generation; only products marked **On Sale** in the admin can be bought online (Buy → guest Checkout → Payment placeholder, no cart) — see §18.
 
 ## 2. Repository Structure
 
@@ -22,6 +22,7 @@ blog.html                   Blog listing (filter + search)
 blog-details.html           Single blog article page
 about-us.html, certifications.html, careers.html, job-details.html, service-center.html,
 events.html, event-details.html   Company pages — see §17 (built from blog.html's chrome)
+buy.html, checkout.html, payment.html   Online shop for On Sale products — see §18 (css/shop.css, js/buy.js, js/checkout.js)
 css/
   base.css                  Design tokens, resets, .container, .btn*, .reveal — loaded on every page
   header.css                 Site header, nav, mega menu, mobile menu — loaded on every page
@@ -56,6 +57,7 @@ api/
   newsletter.php             Footer newsletter → newsletterSubscribers
   careers.php / events.php / service-centers.php   Public JSON for §17 pages (published/open records only)
   job-application.php        Multipart Apply Now form → jobApplications + storage/resumes/ (api/.user.ini raises upload to 6M)
+  order.php                  Guest checkout → orders (status pending-payment); re-prices server-side — see §18
 admin/                       PHP admin panel — see §13
 uploads/                     Files uploaded from the admin (script execution denied by uploads/.htaccess)
 js/
@@ -145,17 +147,17 @@ No modules, no bundler — plain global-scope scripts loaded in `<script>` tags 
 1. `<header class="site-header">` + `<div class="mobile-menu">` — identical to every other page.
 2. `<section class="hero">` — the shared pinned hero (see §8), but here it holds an `<img id="pd-hero-image">` (a still image) rather than the `<video>` element index.html uses. Populated by JS with the product's photo, category eyebrow, and product-name title. `.pd-hero-actions` (Request a Quote / Download Brochure / Enquire Now / WhatsApp) is absolutely positioned over the bottom-right of the hero.
 3. `<div class="hero-spacer">` then `<div class="page-wrap"><main>…</main><footer>…</footer></div>`.
-4. Inside `<main>` (default order — after the breadcrumb the sections are reordered per product, see §16): breadcrumb → media slider (`.pd-slider`, JS-driven, up to 2 images: product photo + category banner) → applications section (banner image + tag list, removed from the DOM if the product has no `applications`) → certifications badge grid (company-wide, static list, same 5 certs on every product) → "Why Choose MarkEn" 4-card grid (fully static, not product-specific) → documentation request cards (4 static cards, each a `mailto:` link pre-filled per product) → FAQ accordion (5 static Q&As, not product-specific).
+4. Inside `<main>` (default order — after the breadcrumb the sections are reordered per product, see §16): breadcrumb → media slider (`.pd-slider`, JS-driven, up to 2 images: product photo + category banner) → applications section (banner image + tag list, removed from the DOM if the product has no `applications`) → "Take a closer look" viewer (`.pd-viewer`, section key `viewer`: Apple-style vertical pill tabs left + photo right, light theme; tabs = the product's `features` `[{title, description, image?}]`, edited in the admin product form's "Take a Closer Look (Key Features)" card (optional per-tab image upload), or 4 company-wide MarkEn points hardcoded in `product-details.js` when it has none; max 6 tabs; a tab without its own image shows photo *i* of `[image, ...gallery]`, repeating) → certifications (static markup copied from the homepage `.certs` section — same 5 `.cert-card` accordion cards + "View All Certifications"; its CSS is duplicated in `product-details.css` because this page can't load `home.css`). The page has no grey (`--bg-soft`) backgrounds — all sections are white → "Why Choose MarkEn" 4-card grid (fully static, not product-specific) → documentation request cards (4 static cards, each a `mailto:` link pre-filled per product) → FAQ accordion (5 static Q&As, not product-specific).
 
 **URL**: canonical URL is `/product-details/{slug}` (root `.htaccess` rewrites it to `product-details.html?slug=`; legacy `?slug=` still works). Because the clean URL adds a path segment, `product-details.html` writes a `<base href>` pointing at the site root as the first thing in `<head>`, and `product-details.js` re-points in-page `#anchor` links at the current URL (otherwise they would resolve to the homepage). Root `.htaccess` must keep `-MultiViews` or this URL 404s.
 
 **Hero media**: if the product has `heroMedia` (admin "Hero Media" card), `product-details.js` adds `.pd-hero--cover` to `.hero` and shows it full-bleed (`object-fit: cover`, no padding); `heroMediaType: "video"` swaps `#pd-hero-image` for a `<video class="hero__video">` (autoplay, muted, loop, playsinline, poster = product image; no autoplay under prefers-reduced-motion). Without hero media the product `image` is shown contained with padding (designed for studio shots on navy).
 
-**Data source**: everything product-specific comes from `PRODUCTS` (served by `api/catalog.php` from MySQL), looked up by slug in `product-details.js`. Fields used: `name`, `category`, `image`, `gallery` (extra slider images; falls back to the category banner when empty), `description` (used only for the `<meta name="description">`), `applications` (optional — drives the applications section). Fields stored but **not yet rendered** on this page: `features`, `fullDescription`, `specifications`, `certifications`, `documents`, `metaTitle`/`metaDescription`.
+**Data source**: everything product-specific comes from `PRODUCTS` (served by `api/catalog.php` from MySQL), looked up by slug in `product-details.js`. Fields used: `name`, `category`, `image`, `gallery` (extra slider images; falls back to the category banner when empty), `description` (used only for the `<meta name="description">`), `applications` (optional — drives the applications section). `features` drives the "Take a closer look" viewer tabs. Fields stored but **not yet rendered** on this page: `fullDescription`, `specifications`, `certifications`, `documents`, `metaTitle`/`metaDescription`.
 
-**No pricing, no variants/sizes, no add-to-cart** — this is not an e-commerce product page. The CTAs are all lead-gen: "Request a Quote" and "Enquire Now" open pre-filled `mailto:` links, "WhatsApp" opens a pre-filled `wa.me` link, "Download Brochure" is an in-page anchor jump to the Documentation section (also `mailto:`-based, since no PDF assets exist to serve).
+**No pricing or add-to-cart on this page itself** — for On Sale products a fixed bottom-centre `.pd-buy` pill ("From ₹X" + Buy Now → `buy/{slug}`, hidden otherwise) is the only shop entry point (§18). The CTAs are all lead-gen: "Request a Quote" and "Enquire Now" open pre-filled `mailto:` links, "WhatsApp" opens a pre-filled `wa.me` link, "Download Brochure" is an in-page anchor jump to the Documentation section (also `mailto:`-based, since no PDF assets exist to serve).
 
-**Notable gap**: `features` (title+description pairs, present on the 4 "featured" products) and the other admin-managed fields listed above are in the DB but not rendered by `product-details.js` yet.
+**Notable gap**: the other admin-managed fields listed above (`fullDescription`, `specifications`, …) are in the DB but not rendered by `product-details.js` yet.
 
 **Media slider**: `.pd-slider` shows at most 2 images (product photo, then category banner if different) with prev/next arrows and dot pagination; if only 1 image is available, the arrows/dots are hidden via inline `style.display`. CSS defines a `.pd-slider__video` class but no video slide is ever added by JS — unused/dead CSS, written for a feature that doesn't exist yet.
 
@@ -262,6 +264,7 @@ admin/
                                      the resume) + login-only resume download (attachment, nosniff)
   service-centers.php / service-center-form.php   Directory list + create/edit (/admin/service-centers/new|edit/{slug})
   events.php / event-form.php        Events list (phase badge, pin = manual override) + create/edit incl. multi-image gallery
+  orders.php         Online orders (§18): list, status select (no delete — cancel instead), delivery details collapse
   upload.php         JSON upload endpoint used by the forms → uploads/ (images/docs 10 MB, MP4/WebM video 50 MB).
                      PHP's 2 MB default is raised for admin/ only: admin/.user.ini (FastCGI — WAMP runs PHP via
                      mod_fcgid, which ignores php_value) and an <IfModule mod_php.c> block in admin/.htaccess
@@ -317,12 +320,12 @@ admin/
 
 Admins drag the product page sections into any order per product; the Hero is locked first.
 
-- **Keys** (`PRODUCT_SECTIONS` in `app/product-sections.php`, = `data-section` attributes in `product-details.html`): `hero` (locked, outside `<main>`), `gallery` (`.pd-slider`), `applications`, `certifications`, `whyChoose`, `documentation`, `faq`. The breadcrumb is not a section and always stays directly under the hero. Default order = array order of `PRODUCT_SECTIONS` (the original page layout).
+- **Keys** (`PRODUCT_SECTIONS` in `app/product-sections.php`, = `data-section` attributes in `product-details.html`): `hero` (locked, outside `<main>`), `gallery` (`.pd-slider`), `applications`, `viewer`, `certifications`, `whyChoose`, `documentation`, `faq`. The breadcrumb is not a section and always stays directly under the hero. Default order = array order of `PRODUCT_SECTIONS` (the original page layout).
 - **Storage**: `products.sectionOrder` JSON (schema v6, `addColumnIfMissing`). `NULL` = default order — `sectionOrderForDb()` stores `NULL` whenever the order equals the default, so untouched products follow future default changes. No data migration was needed; existing products are `NULL`.
 - **Reading** (`normalizeSectionOrder()`, used by `api/catalog.php` and the admin form): drops unknown/duplicate keys, forces `hero` first, and slots any key missing from a stored order (e.g. a section added later) in after its default predecessor — no DB write on page views.
 - **Saving** (`parseSectionOrder()`, strict): must be a list of every key exactly once with `hero` at index 0, otherwise rejected (endpoint → 422; form → field error, nothing saved). Two paths, both server-validated: the card's "Save Section Order" button (edit mode only) → `admin/product-sections.php` (login + CSRF header, product by slug, single `UPDATE products SET sectionOrder = ?` — no other column touched); and the hidden `sectionOrder[]` inputs submitted with the whole product form ("Save/Update Product", the only path for new products).
 - **Admin UI** (`product-form.php` card + `.section-order*` styles in `admin.css`): dependency-free pointer-event drag on the grip button (mouse + touch, `touch-action: none`) and ArrowUp/ArrowDown on the focused grip. The hero row has no grip and rows are never inserted above it. Save button is enabled only with unsaved changes, disabled while saving; SweetAlert toast only after the server confirms; on failure the error is shown, the DB keeps the previous order and the list stays "Unsaved changes". Concurrency: last write wins, like the rest of the admin.
-- **Public page**: `api/catalog.php` emits `sectionOrder` (always a complete normalized list) on every product; `product-details.js` appends each `main > [data-section]` in that order before wiring anything up (moving nodes keeps ids, anchors like `#pd-documentation`, and listeners). `product-details.css` adds top padding to `.pd-slider` / `.pd-applications` when they follow a grey band (`.pd-certifications` / `.pd-documentation`), since they normally only pad their bottom.
+- **Public page**: `api/catalog.php` emits `sectionOrder` (always a complete normalized list) on every product; `product-details.js` appends each `main > [data-section]` in that order before wiring anything up (moving nodes keeps ids, anchors like `#pd-documentation`, and listeners). `product-details.css` adds top padding to `.pd-slider` / `.pd-applications` when they follow a bordered band (`.pd-certifications` / `.pd-documentation`), since they normally only pad their bottom.
 - **Testing**: log in, edit a product, reorder, save, reload (order persists), open `/product-details/{slug}` and check the section order; other products keep theirs. Invalid requests: POST `admin/product-sections` with `{"product":slug,"order":[…]}` and a hero-not-first / duplicate / unknown key → 422.
 
 ## 17. Company Pages (About, Certifications, Careers, Service Center, Events)
@@ -348,3 +351,16 @@ Plain pages (no `.hero` → header always solid). All load `base, header, home, 
 - Never redesign unrelated sections while implementing a requested change.
 - Check both desktop and mobile implications before modifying shared CSS (`base.css`, `header.css`, `footer.css`, `hero.css`).
 - Before changing a global/shared component (header, footer, hero, `.reveal`, `.btn*`, `data.js`/`blog-render.js` helpers), determine which other pages use it (see §11) so the change doesn't silently break them.
+
+## 18. Online Sales (Buy → Checkout → Payment)
+
+Most products stay showcase-only; the admin product form's **On Sale** switch (Publish card) sells one online and reveals the "Sale Details" card.
+
+- **DB (schema v8)**: `products` gained `onSale`, `price` DECIMAL(12,2), `variants` JSON `[{name, description, price}]`, `colors` JSON `[{name, hex, image?}]`, `deliveryInfo`, `inTheBox` JSON list. New `orders` table: orderNumber (`MK` + yymmdd + 6 hex, unique), productId (FK ON DELETE SET NULL) + `productName` snapshot, variant, color, quantity, unitPrice, total, fullName, email, phone, company, gstin, address1/2, city, state, pincode, status `pending-payment|paid|shipped|delivered|cancelled`, ip.
+- **Admin validation**: price required when On Sale; each variant needs a name + price > 0 (a variant's price replaces the base price — "From" = cheapest variant); each colour needs a name + `#rrggbb`; colour images (optional, shown on the Buy page when picked) use the same `data-row-image` upload box as the Closer Look tabs. Admin product list shows an "On Sale" badge.
+- **Catalog**: `api/catalog.php` emits `onSale, price, variants, colors, deliveryInfo, inTheBox` only for On Sale products.
+- **Buy page** `/buy/{slug}` (root `.htaccess` → `buy.html?slug=`, same `<base>` trick as product-details): Apple-style configurator — sticky photo (thumbnails; a colour image replaces it), Model / Colour / Quantity (1–99) steps, delivery + help, What's in the box, FAQ (`<details>`), fixed bottom bar with total + Checkout. Non-sale products redirect to their product page. Selection travels in the URL: `checkout?product=&variant=&color=&qty=` (checkout's "Edit" goes back with the same params).
+- **Checkout** (`checkout.html`): slim logo-only header + mini footer (no site chrome), guest form with floating labels (name, optional company/GSTIN, address, PIN, city, state select, email, mobile) and a sticky order summary. A stale/incomplete selection sends the buyer back to the Buy page. POSTs to `api/order.php` with the standard bot guards (`withBotCheck`, honeypot).
+- **`api/order.php`**: product must be published + On Sale; variant/colour must match the DB (prices are never taken from the browser); validates name, email (`emailError`), 10+ digit phone, GSTIN format, 6-digit PIN; reuses the same unpaid order for an identical repeat within 1h; 5 orders/hour per IP. Returns `{ok, orderNumber, total, productName}`.
+- **Payment** (`payment.html`): placeholder until a gateway is integrated — shows order number + amount from `sessionStorage.markenOrder` (set by checkout.js) and says the team will follow up. A gateway would flip `orders.status` to `paid`.
+- **No emails** are sent for orders yet; staff see them in Admin → CRM → Orders.

@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $products = dbAll(
-    'SELECT p.id, p.slug, p.name, p.status, p.featured, p.image, p.updatedAt, c.name AS categoryName
+    'SELECT p.id, p.slug, p.name, p.status, p.featured, p.onSale, p.image, p.updatedAt, c.name AS categoryName
      FROM `products` p LEFT JOIN `categories` c ON c.slug = p.categorySlug
      ORDER BY p.sortOrder, p.name'
 );
@@ -76,7 +76,7 @@ include __DIR__ . '/includes/layout-top.php';
             </div>
           </td>
           <td><?= h($p['categoryName'] ?? '—') ?></td>
-          <td><span class="badge badge-<?= h($p['status']) ?>"><?= h(ucfirst($p['status'])) ?></span></td>
+          <td><span class="badge badge-<?= h($p['status']) ?>"><?= h(ucfirst($p['status'])) ?></span><?= $p['onSale'] ? ' <span class="badge text-bg-primary">On Sale</span>' : '' ?></td>
           <td data-sort-value="<?= (int)$p['featured'] ?>">
             <button type="button" class="btn btn-link p-0 fs-5 lh-1" data-feature="<?= (int)$p['id'] ?>"
                     data-featured="<?= (int)$p['featured'] ?>" title="Click to <?= $p['featured'] ? 'remove from featured' : 'mark as featured' ?>">

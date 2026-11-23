@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Checkout | MarkEn</title>
+  <link rel="stylesheet" href="css/base.css?v=2172" />
+  <link rel="stylesheet" href="css/shop.css?v=2172" />
+</head>
+<body class="shop-page shop-page--checkout">
+
+  <!-- Checkout keeps a slim header (logo only) like Apple's, so nothing pulls the buyer away. -->
+  <header class="shop-mini-header">
+    <div class="container shop-mini-header__inner">
+      <a href="index.html" aria-label="MarkEn — Home"><img src="images/logo.svg" alt="MarkEn" /></a>
+      <span class="shop-mini-header__secure">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        Secure Checkout
+      </span>
+    </div>
+  </header>
+
+  <main class="shop checkout">
+    <div class="container checkout-head">
+      <h1>Checkout</h1>
+      <p>You're checking out as a guest — no account needed.</p>
+    </div>
+
+    <div class="container checkout-layout">
+      <form class="checkout-form" id="checkout-form" novalidate>
+        <section class="checkout-step">
+          <h2>Where should we send your order?</h2>
+          <div class="checkout-grid">
+            <div class="field field--full">
+              <input id="co-name" name="fullName" type="text" autocomplete="name" maxlength="100" required placeholder=" " />
+              <label for="co-name">Full Name</label>
+            </div>
+            <div class="field">
+              <input id="co-company" name="company" type="text" autocomplete="organization" maxlength="150" placeholder=" " />
+              <label for="co-company">Hospital / Company (optional)</label>
+            </div>
+            <div class="field">
+              <input id="co-gstin" name="gstin" type="text" maxlength="15" placeholder=" " />
+              <label for="co-gstin">GSTIN (optional)</label>
+            </div>
+            <div class="field field--full">
+              <input id="co-address1" name="address1" type="text" autocomplete="address-line1" maxlength="200" required placeholder=" " />
+              <label for="co-address1">Street Address</label>
+            </div>
+            <div class="field field--full">
+              <input id="co-address2" name="address2" type="text" autocomplete="address-line2" maxlength="200" placeholder=" " />
+              <label for="co-address2">Apt, Suite, Building (optional)</label>
+            </div>
+            <div class="field">
+              <input id="co-pincode" name="pincode" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="6" required placeholder=" " />
+              <label for="co-pincode">PIN Code</label>
+            </div>
+            <div class="field">
+              <input id="co-city" name="city" type="text" autocomplete="address-level2" maxlength="100" required placeholder=" " />
+              <label for="co-city">Town / City</label>
+            </div>
+            <div class="field field--full field--select">
+              <select id="co-state" name="state" autocomplete="address-level1" required>
+                <option value="">Select</option>
+                <option>Andaman and Nicobar Islands</option><option>Andhra Pradesh</option><option>Arunachal Pradesh</option>
+                <option>Assam</option><option>Bihar</option><option>Chandigarh</option><option>Chhattisgarh</option>
+                <option>Dadra and Nagar Haveli and Daman and Diu</option><option>Delhi</option><option>Goa</option>
+                <option>Gujarat</option><option>Haryana</option><option>Himachal Pradesh</option><option>Jammu and Kashmir</option>
+                <option>Jharkhand</option><option>Karnataka</option><option>Kerala</option><option>Ladakh</option>
+                <option>Lakshadweep</option><option>Madhya Pradesh</option><option>Maharashtra</option><option>Manipur</option>
+                <option>Meghalaya</option><option>Mizoram</option><option>Nagaland</option><option>Odisha</option>
+                <option>Puducherry</option><option>Punjab</option><option>Rajasthan</option><option>Sikkim</option>
+                <option>Tamil Nadu</option><option>Telangana</option><option>Tripura</option><option>Uttar Pradesh</option>
+                <option>Uttarakhand</option><option>West Bengal</option>
+              </select>
+              <label for="co-state">State</label>
+            </div>
+          </div>
+        </section>
+
+        <section class="checkout-step">
+          <h2>What's your contact information?</h2>
+          <p class="checkout-step__note">We'll email your order confirmation and call to schedule delivery.</p>
+          <div class="checkout-grid">
+            <div class="field">
+              <input id="co-email" name="email" type="email" autocomplete="email" maxlength="200" required placeholder=" " />
+              <label for="co-email">Email Address</label>
+            </div>
+            <div class="field">
+              <input id="co-phone" name="phone" type="tel" autocomplete="tel" maxlength="20" required placeholder=" " />
+              <label for="co-phone">Mobile Number</label>
+            </div>
+          </div>
+        </section>
+
+        <input type="text" name="website" tabindex="-1" autocomplete="off" hidden />
+        <p class="checkout-msg" id="checkout-msg" role="alert"></p>
+        <button type="submit" class="shop-btn shop-btn--block" id="checkout-submit">Continue to Payment</button>
+      </form>
+
+      <aside class="checkout-summary" aria-label="Order summary">
+        <div class="checkout-summary__card">
+          <h2>Order summary</h2>
+          <div class="checkout-summary__item">
+            <img id="co-image" src="" alt="" />
+            <div>
+              <strong id="co-product"></strong>
+              <span id="co-selection"></span>
+              <a href="products.html" id="co-edit">Edit</a>
+            </div>
+          </div>
+          <dl class="checkout-summary__rows">
+            <div><dt>Unit price</dt><dd id="co-unit"></dd></div>
+            <div><dt>Quantity</dt><dd id="co-qty"></dd></div>
+            <div class="checkout-summary__total"><dt>Total <small>(incl. of all taxes)</small></dt><dd id="co-total"></dd></div>
+          </dl>
+          <p class="checkout-summary__note" id="co-delivery"></p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="shop-mini-footer">
+    <div class="container">
+      <span>Need help? Call <a href="tel:+919130305959">+91 91 3030 5959</a> or email <a href="mailto:info@markenworld.com">info@markenworld.com</a>.</span>
+      <span>&copy; 2026 MarkEn. All rights reserved.</span>
+    </div>
+  </footer>
+
+  <script src="api/catalog.php"></script>
+  <script src="js/data.js?v=2172"></script>
+  <script src="js/main.js?v=2172"></script>
+  <script src="js/checkout.js?v=2172"></script>
+</body>
+</html>

@@ -7,6 +7,7 @@ const PRODUCT_SECTIONS = [
     'hero'           => 'Hero',
     'gallery'        => 'Media Gallery',
     'applications'   => 'Applications',
+    'viewer'         => 'Take a Closer Look',
     'certifications' => 'Certifications',
     'whyChoose'      => 'Why Choose MarkEn',
     'documentation'  => 'Documentation',

@@ -29,7 +29,15 @@ try {
             'metaTitle'       => $r['metaTitle'],
             'metaDescription' => $r['metaDescription'],
             'sectionOrder'    => normalizeSectionOrder(fromJson($r['sectionOrder'])),
-        ], fn($v) => $v !== null && $v !== '' && $v !== []);
+        ] + ($r['onSale'] ? [
+            // Sale fields only for products sold online; api/order.php re-prices every order server-side.
+            'onSale'          => true,
+            'price'           => (float)$r['price'],
+            'variants'        => fromJson($r['variants']),
+            'colors'          => fromJson($r['colors']),
+            'deliveryInfo'    => $r['deliveryInfo'],
+            'inTheBox'        => fromJson($r['inTheBox']),
+        ] : []), fn($v) => $v !== null && $v !== '' && $v !== []);
     }
 } catch (Throwable $e) {
     error_log('catalog.php: ' . $e->getMessage());

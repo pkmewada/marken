@@ -16,6 +16,7 @@ $p = [
     'description' => '', 'fullDescription' => '', 'metaTitle' => '', 'metaDescription' => '',
     'gallery' => [], 'features' => [], 'applications' => [], 'specifications' => [], 'certifications' => [], 'documents' => [],
     'sectionOrder' => defaultSectionOrder(),
+    'onSale' => 0, 'price' => '', 'variants' => [], 'colors' => [], 'deliveryInfo' => '', 'inTheBox' => [],
 ];
 $savedOrder = $p['sectionOrder'];   // last persisted order — the Section Order card's "unsaved changes" baseline
 
@@ -26,7 +27,7 @@ if ($editSlug !== '') {
         redirect('products');
     }
     $id = (int)$row['id'];
-    foreach (['gallery', 'features', 'applications', 'specifications', 'certifications', 'documents'] as $k) {
+    foreach (['gallery', 'features', 'applications', 'specifications', 'certifications', 'documents', 'variants', 'colors', 'inTheBox'] as $k) {
         $row[$k] = fromJson($row[$k]);
     }
     $row['sectionOrder'] = $savedOrder = normalizeSectionOrder(fromJson($row['sectionOrder']));
@@ -49,16 +50,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'fullDescription' => post('fullDescription'),
         'metaTitle'       => post('metaTitle'),
         'metaDescription' => post('metaDescription'),
+        'onSale'          => isset($_POST['onSale']) ? 1 : 0,
+        'price'           => post('price'),
+        'deliveryInfo'    => post('deliveryInfo'),
     ]);
+
+    // Online sale (Buy Now page): price, variants, colours, box contents.
+    $p['inTheBox'] = array_values(array_filter(array_map('trim', explode("\n", post('inTheBox')))));
+    $p['variants'] = $p['colors'] = [];
+    foreach (postList('variantName') as $i => $n) {
+        $d  = postList('variantDescription')[$i] ?? '';
+        $pr = postList('variantPrice')[$i] ?? '';
+        if ($n !== '' || $d !== '' || $pr !== '') $p['variants'][] = ['name' => $n, 'description' => $d, 'price' => $pr];
+    }
+    foreach (postList('colorName') as $i => $n) {
+        $hex = postList('colorHex')[$i] ?? '';
+        $img = postList('colorImage')[$i] ?? '';
+        if ($n === '' && $img === '') continue;
+        $color = ['name' => $n, 'hex' => $hex];
+        if ($img !== '') $color['image'] = $img;
+        $p['colors'][] = $color;
+    }
 
     // Repeatable groups — blank rows are dropped.
     $p['gallery'] = array_values(array_filter(postList('gallery')));
     $p['applications'] = array_values(array_filter(array_map('trim', explode(',', post('applications')))));
     $p['certifications'] = array_values(array_intersect(CERT_OPTIONS, postList('certifications')));
     $p['features'] = $p['specifications'] = $p['documents'] = [];
+    // Features = the "Take a Closer Look" tabs on the product page; the image is optional per tab.
     foreach (postList('featureTitle') as $i => $t) {
-        $d = postList('featureDescription')[$i] ?? '';
-        if ($t !== '' || $d !== '') $p['features'][] = ['title' => $t, 'description' => $d];
+        $d   = postList('featureDescription')[$i] ?? '';
+        $img = postList('featureImage')[$i] ?? '';
+        if ($t === '' && $d === '' && $img === '') continue;
+        $feature = ['title' => $t, 'description' => $d];
+        if ($img !== '') $feature['image'] = $img;
+        $p['features'][] = $feature;
     }
     foreach (postList('specLabel') as $i => $k) {
         $v = postList('specValue')[$i] ?? '';
@@ -103,11 +129,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['heroMedia'] = 'Upload a JPG/PNG/WebP image or an MP4/WebM video.';
     }
     foreach ($p['gallery'] as $g) if (!isSafeLink($g)) { $errors['gallery'] = 'Invalid gallery image.'; break; }
-    foreach ($p['features'] as $f) if ($f['title'] === '') { $errors['features'] = 'Every feature needs a title.'; break; }
+    foreach ($p['features'] as $f) {
+        if ($f['title'] === '') { $errors['features'] = 'Every tab needs a title.'; break; }
+        if (isset($f['image']) && (!isSafeLink($f['image']) || !preg_match('/\.(jpe?g|png|webp|gif)$/i', $f['image']))) {
+            $errors['features'] = 'Tab images must be uploaded JPG, PNG, WebP or GIF files.'; break;
+        }
+    }
     foreach ($p['specifications'] as $s) if ($s['label'] === '' || $s['value'] === '') { $errors['specifications'] = 'Each specification needs both a parameter and a value.'; break; }
     foreach ($p['documents'] as $d) {
         if ($d['label'] === '' || $d['url'] === '') { $errors['documents'] = 'Each document needs a label and a file or link.'; break; }
         if (!isSafeLink($d['url'])) { $errors['documents'] = 'Document links must start with https://, mailto: or be an uploaded file.'; break; }
+    }
+    $validPrice = fn($v) => is_numeric($v) && (float)$v > 0 && (float)$v < 1e10;
+    if ($p['price'] !== '' && !$validPrice($p['price'])) $errors['price'] = 'Enter a price greater than 0, e.g. 125000.';
+    elseif ($p['onSale'] && $p['price'] === '') $errors['price'] = 'A product on sale needs a price.';
+    if (mb_strlen($p['deliveryInfo']) > 300) $errors['deliveryInfo'] = 'Delivery info is too long (max 300 characters).';
+    foreach ($p['variants'] as $i => $v) {
+        if ($v['name'] === '' || !$validPrice($v['price'])) { $errors['variants'] = 'Each variant needs a name and a price greater than 0.'; break; }
+        $p['variants'][$i]['price'] = round((float)$v['price'], 2);
+    }
+    foreach ($p['colors'] as $c) {
+        if ($c['name'] === '' || !preg_match('/^#[0-9a-f]{6}$/i', $c['hex'])) { $errors['colors'] = 'Each colour needs a name and a swatch colour.'; break; }
+        if (isset($c['image']) && (!isSafeLink($c['image']) || !preg_match('/\.(jpe?g|png|webp|gif)$/i', $c['image']))) {
+            $errors['colors'] = 'Colour images must be uploaded JPG, PNG, WebP or GIF files.'; break;
+        }
     }
     if ($order === null) $errors['sectionOrder'] = 'Invalid section order — the Hero must stay first. The list has been reset; check it and save again.';
 
@@ -119,11 +164,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             toJson($p['certifications']), toJson($p['documents']),
             $p['metaTitle'] ?: null, $p['metaDescription'] ?: null,
             $p['heroMediaType'] ?: null, $p['heroMedia'] ?: null, sectionOrderForDb($p['sectionOrder']),
+            $p['onSale'], $p['price'] === '' ? null : round((float)$p['price'], 2),
+            toJson($p['variants']), toJson($p['colors']), $p['deliveryInfo'] ?: null, toJson($p['inTheBox']),
         ];
         $cols = 'name = ?, slug = ?, categorySlug = ?, status = ?, featured = ?, image = ?, gallery = ?,
                  description = ?, fullDescription = ?, features = ?, applications = ?, specifications = ?,
                  certifications = ?, documents = ?, metaTitle = ?, metaDescription = ?,
-                 heroMediaType = ?, heroMedia = ?, sectionOrder = ?';
+                 heroMediaType = ?, heroMedia = ?, sectionOrder = ?,
+                 onSale = ?, price = ?, variants = ?, colors = ?, deliveryInfo = ?, inTheBox = ?';
         if ($id > 0) {
             dbRun("UPDATE `products` SET $cols WHERE id = ?", [...$vals, $id]);
             setFlash('success', "Product \"{$p['name']}\" updated.");
@@ -214,21 +262,93 @@ $groupError = fn(string $k) => isset($errors[$k]) ? '<div class="text-danger sma
         </div>
       </div>
 
+      <div class="card mb-4 border-primary<?= $p['onSale'] ? '' : ' d-none' ?>" id="saleCard">
+        <div class="card-header">Sale Details <span class="small text-muted">— shown on the Buy Now page</span></div>
+        <div class="card-body">
+          <div class="row g-3 mb-3">
+            <div class="col-sm-4">
+              <label class="form-label small fw-semibold" for="price">Price (₹) <span class="text-danger">*</span></label>
+              <input type="number" id="price" name="price" min="1" step="0.01" class="form-control<?= invalid($errors, 'price') ?>"
+                     value="<?= h($p['price']) ?>" placeholder="e.g. 125000">
+              <?= fieldError($errors, 'price') ?>
+              <div class="form-text">Used when there are no variants.</div>
+            </div>
+            <div class="col-sm-8">
+              <label class="form-label small fw-semibold" for="deliveryInfo">Delivery Info</label>
+              <input type="text" id="deliveryInfo" name="deliveryInfo" maxlength="300" class="form-control<?= invalid($errors, 'deliveryInfo') ?>"
+                     value="<?= h($p['deliveryInfo']) ?>" placeholder="e.g. Free delivery and installation across India in 7–10 working days">
+              <?= fieldError($errors, 'deliveryInfo') ?>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small fw-semibold">Variants <span class="text-muted fw-normal">(models / capacities — each with its own price)</span></span>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-add-row="variant"><i class="bi bi-plus-lg"></i> Add Variant</button>
+          </div>
+          <?= $groupError('variants') ?>
+          <div data-rows="variant" class="mb-3">
+            <?php foreach ($p['variants'] as $v): ?>
+              <div class="row g-2 mb-2" data-row>
+                <div class="col-sm-4"><input type="text" name="variantName[]" class="form-control form-control-sm" placeholder="Name, e.g. 300 Litres" value="<?= h($v['name'] ?? '') ?>"></div>
+                <div class="col"><input type="text" name="variantDescription[]" class="form-control form-control-sm" placeholder="Details, e.g. 2 doors, 6 shelves, +2°C to +8°C" value="<?= h($v['description'] ?? '') ?>"></div>
+                <div class="col-sm-2"><input type="number" name="variantPrice[]" min="1" step="0.01" class="form-control form-control-sm" placeholder="₹ Price" value="<?= h((string)($v['price'] ?? '')) ?>"></div>
+                <div class="col-auto"><button type="button" class="btn btn-sm btn-outline-danger" data-remove-row><i class="bi bi-trash"></i></button></div>
+              </div>
+            <?php endforeach; ?>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small fw-semibold">Colours <span class="text-muted fw-normal">(optional image shown when the colour is picked)</span></span>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-add-row="color"><i class="bi bi-plus-lg"></i> Add Colour</button>
+          </div>
+          <?= $groupError('colors') ?>
+          <div data-rows="color" class="mb-3">
+            <?php foreach ($p['colors'] as $c): $cImg = $c['image'] ?? ''; ?>
+              <div class="d-flex flex-wrap align-items-center gap-2 mb-2" data-row>
+                <input type="color" name="colorHex[]" class="form-control form-control-color form-control-sm" value="<?= h($c['hex'] ?? '#ffffff') ?>" title="Swatch colour">
+                <input type="text" name="colorName[]" class="form-control form-control-sm" style="max-width:220px" placeholder="Name, e.g. Pearl White" value="<?= h($c['name'] ?? '') ?>">
+                <span class="d-flex align-items-center gap-2" data-row-image>
+                  <img src="<?= $cImg ? '../' . h($cImg) : '' ?>" alt="" class="rounded border<?= $cImg ? '' : ' d-none' ?>" style="width:64px;height:40px;object-fit:contain">
+                  <input type="hidden" name="colorImage[]" value="<?= h($cImg) ?>">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-row-image-upload><i class="bi bi-image me-1"></i><?= $cImg ? 'Replace' : 'Add' ?> Image</button>
+                  <button type="button" class="btn btn-sm btn-link text-danger p-0<?= $cImg ? '' : ' d-none' ?>" data-row-image-clear>Remove</button>
+                </span>
+                <button type="button" class="btn btn-sm btn-outline-danger ms-auto" data-remove-row><i class="bi bi-trash"></i></button>
+              </div>
+            <?php endforeach; ?>
+          </div>
+
+          <label class="form-label small fw-semibold" for="inTheBox">What's in the Box</label>
+          <textarea id="inTheBox" name="inTheBox" rows="3" class="form-control"
+                    placeholder="One item per line, e.g.&#10;Ice-lined refrigerator&#10;Temperature data logger&#10;User manual"><?= h(implode("\n", $p['inTheBox'])) ?></textarea>
+        </div>
+      </div>
+
       <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-          Key Features
-          <button type="button" class="btn btn-sm btn-outline-primary" data-add-row="feature"><i class="bi bi-plus-lg"></i> Add</button>
+          Take a Closer Look (Key Features)
+          <button type="button" class="btn btn-sm btn-outline-primary" data-add-row="feature"><i class="bi bi-plus-lg"></i> Add Tab</button>
         </div>
         <div class="card-body">
           <?= $groupError('features') ?>
           <div data-rows="feature">
-            <?php foreach ($p['features'] as $f): ?>
+            <?php foreach ($p['features'] as $f): $fImg = $f['image'] ?? ''; ?>
               <div class="border rounded p-2 mb-2 position-relative" data-row>
                 <button type="button" class="btn-close position-absolute top-0 end-0 m-2" data-remove-row aria-label="Remove"></button>
-                <input type="text" name="featureTitle[]" class="form-control form-control-sm mb-1 w-75" placeholder="Feature title, e.g. Triple Seal Door Design" value="<?= h($f['title'] ?? '') ?>">
-                <textarea name="featureDescription[]" class="form-control form-control-sm" rows="2" placeholder="Short explanation, e.g. Multi-point sealing for superior insulation"><?= h($f['description'] ?? '') ?></textarea>
+                <input type="text" name="featureTitle[]" class="form-control form-control-sm mb-1 w-75" placeholder="Tab title, e.g. Triple Seal Door Design" value="<?= h($f['title'] ?? '') ?>">
+                <textarea name="featureDescription[]" class="form-control form-control-sm" rows="2" placeholder="Shown when the tab is open, e.g. Multi-point sealing for superior insulation"><?= h($f['description'] ?? '') ?></textarea>
+                <div class="d-flex align-items-center gap-2 mt-2" data-row-image>
+                  <img src="<?= $fImg ? '../' . h($fImg) : '' ?>" alt="" class="rounded border<?= $fImg ? '' : ' d-none' ?>" style="width:64px;height:40px;object-fit:contain">
+                  <input type="hidden" name="featureImage[]" value="<?= h($fImg) ?>">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-row-image-upload><i class="bi bi-image me-1"></i><?= $fImg ? 'Replace' : 'Add' ?> Image</button>
+                  <button type="button" class="btn btn-sm btn-link text-danger p-0<?= $fImg ? '' : ' d-none' ?>" data-row-image-clear>Remove</button>
+                </div>
               </div>
             <?php endforeach; ?>
+          </div>
+          <div class="form-text">
+            Tabs of the “Take a Closer Look” section on the product page (up to 6 are shown). The image is optional —
+            without one, the tab shows the product image or a gallery image. With no tabs, standard MarkEn points are shown.
           </div>
         </div>
       </div>
@@ -318,6 +438,10 @@ $groupError = fn(string $k) => isset($errors[$k]) ? '<div class="text-danger sma
           <div class="form-check form-switch mb-3">
             <input class="form-check-input" type="checkbox" name="featured" id="featured" value="1"<?= $p['featured'] ? ' checked' : '' ?>>
             <label class="form-check-label small" for="featured">Featured product</label>
+          </div>
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" name="onSale" id="onSale" value="1"<?= $p['onSale'] ? ' checked' : '' ?>>
+            <label class="form-check-label small" for="onSale">On Sale — sell online with a Buy Now button</label>
           </div>
           <button type="submit" class="btn btn-dark w-100"><i class="bi bi-check-lg me-1"></i><?= $isEdit ? 'Update' : 'Save' ?> Product</button>
         </div>
@@ -442,8 +566,35 @@ $groupError = fn(string $k) => isset($errors[$k]) ? '<div class="text-danger sma
 <template id="tpl-feature">
   <div class="border rounded p-2 mb-2 position-relative" data-row>
     <button type="button" class="btn-close position-absolute top-0 end-0 m-2" data-remove-row aria-label="Remove"></button>
-    <input type="text" name="featureTitle[]" class="form-control form-control-sm mb-1 w-75" placeholder="Feature title, e.g. Triple Seal Door Design">
-    <textarea name="featureDescription[]" class="form-control form-control-sm" rows="2" placeholder="Short explanation, e.g. Multi-point sealing for superior insulation"></textarea>
+    <input type="text" name="featureTitle[]" class="form-control form-control-sm mb-1 w-75" placeholder="Tab title, e.g. Triple Seal Door Design">
+    <textarea name="featureDescription[]" class="form-control form-control-sm" rows="2" placeholder="Shown when the tab is open, e.g. Multi-point sealing for superior insulation"></textarea>
+    <div class="d-flex align-items-center gap-2 mt-2" data-row-image>
+      <img src="" alt="" class="rounded border d-none" style="width:64px;height:40px;object-fit:contain">
+      <input type="hidden" name="featureImage[]" value="">
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-row-image-upload><i class="bi bi-image me-1"></i>Add Image</button>
+      <button type="button" class="btn btn-sm btn-link text-danger p-0 d-none" data-row-image-clear>Remove</button>
+    </div>
+  </div>
+</template>
+<template id="tpl-variant">
+  <div class="row g-2 mb-2" data-row>
+    <div class="col-sm-4"><input type="text" name="variantName[]" class="form-control form-control-sm" placeholder="Name, e.g. 300 Litres"></div>
+    <div class="col"><input type="text" name="variantDescription[]" class="form-control form-control-sm" placeholder="Details, e.g. 2 doors, 6 shelves, +2°C to +8°C"></div>
+    <div class="col-sm-2"><input type="number" name="variantPrice[]" min="1" step="0.01" class="form-control form-control-sm" placeholder="₹ Price"></div>
+    <div class="col-auto"><button type="button" class="btn btn-sm btn-outline-danger" data-remove-row><i class="bi bi-trash"></i></button></div>
+  </div>
+</template>
+<template id="tpl-color">
+  <div class="d-flex flex-wrap align-items-center gap-2 mb-2" data-row>
+    <input type="color" name="colorHex[]" class="form-control form-control-color form-control-sm" value="#ffffff" title="Swatch colour">
+    <input type="text" name="colorName[]" class="form-control form-control-sm" style="max-width:220px" placeholder="Name, e.g. Pearl White">
+    <span class="d-flex align-items-center gap-2" data-row-image>
+      <img src="" alt="" class="rounded border d-none" style="width:64px;height:40px;object-fit:contain">
+      <input type="hidden" name="colorImage[]" value="">
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-row-image-upload><i class="bi bi-image me-1"></i>Add Image</button>
+      <button type="button" class="btn btn-sm btn-link text-danger p-0 d-none" data-row-image-clear>Remove</button>
+    </span>
+    <button type="button" class="btn btn-sm btn-outline-danger ms-auto" data-remove-row><i class="bi bi-trash"></i></button>
   </div>
 </template>
 <template id="tpl-spec">
@@ -469,6 +620,11 @@ $groupError = fn(string $k) => isset($errors[$k]) ? '<div class="text-danger sma
 <?php
 $pageScripts = <<<'HTML'
 <script>
+// "On Sale" reveals the Sale Details card (its values are kept when hidden).
+document.getElementById('onSale').addEventListener('change', (e) => {
+  document.getElementById('saleCard').classList.toggle('d-none', !e.target.checked);
+});
+
 document.querySelectorAll('[data-add-row]').forEach((btn) => btn.addEventListener('click', () => {
   const key = btn.dataset.addRow;
   document.querySelector(`[data-rows="${key}"]`).append(document.getElementById(`tpl-${key}`).content.cloneNode(true));
@@ -477,6 +633,34 @@ document.querySelectorAll('[data-add-row]').forEach((btn) => btn.addEventListene
 document.addEventListener('click', async (e) => {
   const remove = e.target.closest('[data-remove-row]');
   if (remove) { remove.closest('[data-row]').remove(); return; }
+
+  // Row image (closer-look tab / colour): upload / remove, kept in the row's hidden input
+  const imageBox = e.target.closest('[data-row-image]');
+  if (imageBox) {
+    const img = imageBox.querySelector('img');
+    const input = imageBox.querySelector('input');
+    const upload = imageBox.querySelector('[data-row-image-upload]');
+    const clear = imageBox.querySelector('[data-row-image-clear]');
+    const setImage = (url) => {
+      input.value = url;
+      img.src = url ? `../${url}` : '';
+      img.classList.toggle('d-none', !url);
+      clear.classList.toggle('d-none', !url);
+      upload.innerHTML = `<i class="bi bi-image me-1"></i>${url ? 'Replace' : 'Add'} Image`;
+    };
+    if (e.target.closest('[data-row-image-clear]')) { setImage(''); return; }
+    if (!e.target.closest('[data-row-image-upload]')) return;
+    const picker = Object.assign(document.createElement('input'), { type: 'file', accept: 'image/jpeg,image/png,image/webp,image/gif' });
+    picker.onchange = async () => {
+      if (!picker.files[0]) return;
+      upload.disabled = true;
+      try { setImage((await uploadFile(picker.files[0])).url); }
+      catch (err) { showError(err.message); }
+      finally { upload.disabled = false; }
+    };
+    picker.click();
+    return;
+  }
 
   const docBtn = e.target.closest('[data-doc-upload]');
   if (!docBtn) return;

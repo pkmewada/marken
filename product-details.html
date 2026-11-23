@@ -151,10 +151,66 @@
         </div>
       </section>
 
-      <section class="pd-certifications" data-section="certifications">
+      <!-- Vertical tab viewer (Apple "product viewer" pattern): tabs left, media right; filled by product-details.js -->
+      <section class="container pd-viewer" data-section="viewer">
+        <h2 class="reveal">Take a closer look.</h2>
+        <div class="pd-viewer__layout reveal">
+          <div class="pd-viewer__tabs" id="pd-viewer-tabs"></div>
+          <div class="pd-viewer__media" id="pd-viewer-media"></div>
+        </div>
+      </section>
+
+      <!-- Same cards as the homepage certifications section (index.html) -->
+      <section class="pd-certifications certs" data-section="certifications">
         <div class="container">
-          <h2 class="reveal">Certifications</h2>
-          <div class="pd-certifications__grid reveal" id="pd-certifications-grid"></div>
+          <div class="section-head">
+            <span class="eyebrow reveal">Certifications</span>
+            <h2 class="reveal">Certified &amp; Trusted Worldwide</h2>
+            <p class="reveal">MarkEn's manufacturing and products are certified to the international standards healthcare institutions rely on. Tap a certification to learn what it covers.</p>
+          </div>
+          <div class="certs__grid">
+            <button type="button" class="cert-card reveal" aria-expanded="false">
+              <span class="cert-card__head">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="9" r="6.5"/><path d="M8.5 14.5 7 22l5-2.5 5 2.5-1.5-7.5"/></svg>
+                <span class="cert-card__name">WHO PQS</span>
+                <span class="icon">+</span>
+              </span>
+              <span class="cert-card__desc"><span>WHO's Performance, Quality and Safety programme prequalifies medical devices for procurement by UN agencies and national health programmes — MarkEn holds 11+ WHO PQS accredited products, the most of any Indian brand.</span></span>
+            </button>
+            <button type="button" class="cert-card reveal" aria-expanded="false">
+              <span class="cert-card__head">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="9" r="6.5"/><path d="M8.5 14.5 7 22l5-2.5 5 2.5-1.5-7.5"/></svg>
+                <span class="cert-card__name">ISO 9001:2015</span>
+                <span class="icon">+</span>
+              </span>
+              <span class="cert-card__desc"><span>The international standard for quality management systems, ensuring consistent processes, continual improvement and customer satisfaction across our design, manufacturing and after-sales service.</span></span>
+            </button>
+            <button type="button" class="cert-card reveal" aria-expanded="false">
+              <span class="cert-card__head">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="9" r="6.5"/><path d="M8.5 14.5 7 22l5-2.5 5 2.5-1.5-7.5"/></svg>
+                <span class="cert-card__name">ISO 13485:2016</span>
+                <span class="icon">+</span>
+              </span>
+              <span class="cert-card__desc"><span>The dedicated quality management standard for medical device manufacturers, covering regulatory compliance, risk management and full traceability across the product lifecycle.</span></span>
+            </button>
+            <button type="button" class="cert-card reveal" aria-expanded="false">
+              <span class="cert-card__head">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="9" r="6.5"/><path d="M8.5 14.5 7 22l5-2.5 5 2.5-1.5-7.5"/></svg>
+                <span class="cert-card__name">ISO 14001:2015</span>
+                <span class="icon">+</span>
+              </span>
+              <span class="cert-card__desc"><span>The international standard for environmental management systems, reflecting our commitment to reducing environmental impact across manufacturing operations.</span></span>
+            </button>
+            <button type="button" class="cert-card reveal" aria-expanded="false">
+              <span class="cert-card__head">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="9" r="6.5"/><path d="M8.5 14.5 7 22l5-2.5 5 2.5-1.5-7.5"/></svg>
+                <span class="cert-card__name">WHO GMP</span>
+                <span class="icon">+</span>
+              </span>
+              <span class="cert-card__desc"><span>WHO's Good Manufacturing Practices guidelines ensure products are consistently produced and controlled to the quality standards required for their intended use, minimizing risk at every stage of production.</span></span>
+            </button>
+          </div>
+          <a href="certifications" class="btn btn-dark certs__cta reveal">View All Certifications</a>
         </div>
       </section>
 
@@ -342,6 +398,12 @@
         </button>
       </div>
 </footer>
+  </div>
+
+  <!-- Shown only for products marked On Sale in the admin (product-details.js). -->
+  <div class="pd-buy" id="pd-buy" hidden>
+    <span class="pd-buy__price" id="pd-buy-price"></span>
+    <a href="#" class="pd-buy__btn" id="pd-buy-link">Buy Now</a>
   </div>
 
   <script src="api/catalog.php"></script>

@@ -24,7 +24,8 @@ $nav = [
         'service-centers' => ['service-centers', 'bi-geo-alt',        'Service Centers'],
     ],
     'CRM' => [
-        'enquiries'         => ['enquiries',         'bi-envelope',       'Contact Enquiries'],
+        'orders'            => ['orders',            'bi-bag',            'Orders'],
+        'enquiries'        => ['enquiries',         'bi-envelope',       'Contact Enquiries'],
         'document-requests' => ['document-requests', 'bi-file-earmark-arrow-down', 'Document Requests'],
         'newsletter'        => ['newsletter',        'bi-megaphone',      'Newsletter'],
     ],

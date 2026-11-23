@@ -71,7 +71,6 @@ body.pd-page .hero {
 .pd-slider__stage {
   position: relative;
   aspect-ratio: 16 / 9;
-  background: var(--bg-soft);
   border: 1px solid var(--border);
   overflow: hidden;
 }
@@ -185,47 +184,209 @@ body.pd-page .hero {
 
 /* Section order is set per product in the admin. The slider and applications
    only pad their bottom (by default they follow the breadcrumb / each other);
-   placed right after a grey band they need the same gap on top. */
+   placed right after a bordered band they need the same gap on top. */
 .pd-certifications + .pd-slider,
 .pd-documentation + .pd-slider,
 .pd-certifications + .pd-applications,
-.pd-documentation + .pd-applications {
+.pd-documentation + .pd-applications,
+.pd-certifications + .pd-viewer,
+.pd-documentation + .pd-viewer {
   padding-top: 5rem;
 }
 
-/* ---------- Certifications ---------- */
+/* ---------- Take a closer look (vertical tab viewer, light theme) ----------
+   Apple's product-viewer pattern: pill tabs on the left, the active one opens
+   to show its text; the photo on the right cross-fades to match. */
+.pd-viewer {
+  padding-bottom: 5rem;
+}
+.pd-viewer__layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 2fr;
+  gap: 2.5rem;
+  align-items: center;
+}
+.pd-viewer__tabs {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+.pd-viewer__tab {
+  max-width: 100%;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  padding: 0.85rem 1.4rem 0.85rem 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.3s var(--ease);
+}
+.pd-viewer__tab:hover,
+.pd-viewer__tab.is-active {
+  border-color: var(--navy);
+}
+.pd-viewer__tab.is-active {
+  width: 100%;
+  cursor: default;
+}
+.pd-viewer__head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.pd-viewer__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: transform 0.3s var(--ease);
+}
+.pd-viewer__tab.is-active .pd-viewer__icon {
+  transform: rotate(45deg);
+}
+.pd-viewer__label {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+/* 0fr → 1fr grid rows animate the open/close without measuring heights in JS */
+.pd-viewer__desc {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s var(--ease);
+}
+.pd-viewer__tab.is-active .pd-viewer__desc {
+  grid-template-rows: 1fr;
+}
+.pd-viewer__desc span {
+  overflow: hidden;
+  padding-left: calc(26px + 0.75rem);
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--body);
+}
+.pd-viewer__tab.is-active .pd-viewer__desc span {
+  padding-top: 0.6rem;
+}
+.pd-viewer__media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  overflow: hidden;
+}
+.pd-viewer__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 2rem;
+  opacity: 0;
+  transition: opacity 0.5s var(--ease);
+}
+.pd-viewer__media img.is-active {
+  opacity: 1;
+}
+
+/* ---------- Certifications ----------
+   Same cards as the homepage section; copied from home.css because this page
+   can't load home.css (it resizes the shared .hero). */
 .pd-certifications {
   border-top: 1px solid var(--border);
   padding: 5rem 0;
-  background: var(--bg-soft);
 }
-.pd-certifications h2,
+.pd-viewer h2,
 .pd-why h2,
 .pd-documentation h2,
 .pd-faq h2 {
   font-size: clamp(1.5rem, 2.4vw, 1.9rem);
   margin-bottom: 2rem;
 }
-.pd-certifications__grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+.pd-certifications .section-head {
+  text-align: center;
 }
-.pd-cert-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6em;
+.pd-certifications .section-head h2 {
+  margin-top: 0.75rem;
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+}
+.pd-certifications .section-head p {
+  max-width: 52ch;
+  margin: 1.25rem auto 0;
+  line-height: 1.75;
+}
+.certs {
+  text-align: center;
+}
+.certs__cta {
+  margin-top: 3rem;
+}
+.certs__grid {
+  margin-top: 3.5rem;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.25rem;
+}
+.cert-card {
+  text-align: left;
   background: #fff;
   border: 1px solid var(--border);
-  padding: 0.85em 1.5em;
-  font-size: 0.8rem;
-  font-weight: 600;
+  padding: 1.5rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.3s var(--ease);
+}
+.cert-card:hover {
+  border-color: var(--navy);
+}
+.cert-card__head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.cert-card__head svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  color: var(--navy);
+}
+.cert-card__name {
+  flex: 1;
+  font-family: var(--font-heading);
+  font-size: 0.92rem;
+  font-weight: 500;
   color: var(--ink);
 }
-.pd-cert-badge svg {
-  width: 16px;
-  height: 16px;
+.cert-card__head .icon {
+  flex: none;
+  font-size: 1.2rem;
   color: var(--navy);
+  transition: transform 0.3s var(--ease);
+}
+.cert-card.is-open .cert-card__head .icon {
+  transform: rotate(45deg);
+}
+.cert-card__desc {
+  display: block;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s var(--ease);
+}
+.cert-card__desc span {
+  display: block;
+  padding-top: 1rem;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--body);
 }
 
 /* ---------- Why choose ---------- */
@@ -259,7 +420,6 @@ body.pd-page .hero {
 /* ---------- Documentation ---------- */
 .pd-documentation {
   border-top: 1px solid var(--border);
-  background: var(--bg-soft);
   padding: 5rem 0;
 }
 .pd-documentation__lead {
@@ -409,8 +569,22 @@ body.pd-page .hero {
   .pd-documentation__grid {
     grid-template-columns: repeat(2, 1fr);
   }
+  .certs__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.75rem;
+  }
 }
 @media (max-width: 760px) {
+  .pd-viewer__layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .pd-viewer__media {
+    order: -1;
+  }
+  .pd-viewer__tab {
+    width: 100%;
+  }
   /* Title and actions both sit at the bottom of the hero; absolutely
      positioned they overlap, so stack them in normal flow instead. */
   body.pd-page .hero {
@@ -446,6 +620,11 @@ body.pd-page .hero {
     letter-spacing: 0.08em;
   }
 }
+@media (max-width: 640px) {
+  .certs__grid {
+    grid-template-columns: 1fr;
+  }
+}
 @media (max-width: 560px) {
   .pd-why__grid,
   .pd-documentation__grid {
@@ -454,5 +633,49 @@ body.pd-page .hero {
   .pd-slider__arrow {
     width: 36px;
     height: 36px;
+  }
+}
+
+/* Sticky "Buy Now" pill (On Sale products only), bottom centre like Apple's floating buy bar. */
+.pd-buy:not([hidden]) {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.5rem 0.5rem 0.5rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.pd-buy__price {
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.pd-buy__btn {
+  padding: 0.7rem 1.6rem;
+  border-radius: 999px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background 0.3s var(--ease);
+}
+.pd-buy__btn:hover,
+.pd-buy__btn:focus-visible {
+  background: var(--blue);
+}
+@media (max-width: 560px) {
+  .pd-buy:not([hidden]) {
+    bottom: 1rem;
+    gap: 0.9rem;
+    padding-left: 1.1rem;
   }
 }
