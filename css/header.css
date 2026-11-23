@@ -5,47 +5,36 @@
   transition: background 0.5s var(--ease), box-shadow 0.5s var(--ease);
 }
 
-/* Utility bar */
+/* Utility bar: empty breathing room above the logo at the top of the page; once
+   scrolled it becomes the compact bar holding the brand mark + the nav (see below). */
 .header-utility {
   height: var(--util-h);
   display: flex;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  transition: border-color 0.5s var(--ease);
 }
 .header-utility__inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
 }
-.header-utility__left,
-.header-utility__right {
-  display: flex;
-  align-items: center;
-  gap: 1.75rem;
-}
-.header-utility a,
-.header-utility button {
-  font-size: 0.66rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.85);
-  background: none;
-  border: none;
-  cursor: pointer;
+/* Brand mark (favicon), shown only in the compact bar. z-index above the
+   full-width absolutely positioned nav so it stays clickable. */
+.header-mark {
+  position: relative;
+  z-index: 6;
   display: inline-flex;
-  align-items: center;
-  gap: 0.4em;
-  transition: color 0.3s;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-8px);
+  transition: opacity 0.4s var(--ease), transform 0.4s var(--ease), visibility 0.4s;
 }
-.header-utility a:hover,
-.header-utility button:hover {
-  color: #fff;
+.header-mark img {
+  width: 24px;
+  height: 24px;
 }
-.header-utility svg {
-  width: 14px;
-  height: 14px;
+.site-header.is-compact .header-mark {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
 }
 
 /* Main nav row */
@@ -113,17 +102,6 @@
   background: rgba(255, 255, 255, 0.97);
   backdrop-filter: blur(10px);
   box-shadow: 0 1px 0 var(--border);
-}
-.site-header.is-solid .header-utility {
-  border-bottom-color: var(--border);
-}
-.site-header.is-solid .header-utility a,
-.site-header.is-solid .header-utility button {
-  color: var(--body);
-}
-.site-header.is-solid .header-utility a:hover,
-.site-header.is-solid .header-utility button:hover {
-  color: var(--navy);
 }
 .site-header.is-solid .header-logo img {
   filter: none;
@@ -407,12 +385,6 @@ body.menu-open .site-header {
   background: #fff;
   box-shadow: 0 1px 0 var(--border);
 }
-body.menu-open .site-header .header-utility {
-  border-bottom-color: var(--border);
-}
-body.menu-open .site-header .header-utility a {
-  color: var(--body);
-}
 body.menu-open .site-header .header-logo img {
   filter: none;
 }
@@ -428,8 +400,10 @@ body.menu-open .header-burger span:last-child {
 }
 
 @media (max-width: 1024px) {
+  /* No compact bar here (the burger stays in header-main), so the empty utility
+     bar is dropped; --util-h is 0 at this width (base.css). */
   .header-nav,
-  .header-utility__left {
+  .header-utility {
     display: none;
   }
   .header-burger {

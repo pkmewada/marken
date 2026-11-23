@@ -9,13 +9,13 @@
     content="MarkEn — precision-engineered medical cold chain, blood bank, hospital furniture and critical care technology, trusted by 20,000+ healthcare institutions worldwide."
   />
   <title>MarkEn | Precision Medical Technology</title>
-  <link rel="stylesheet" href="css/base.css?v=2170" />
-  <link rel="stylesheet" href="css/header.css?v=2170" />
-  <link rel="stylesheet" href="css/hero.css?v=2170" />
-  <link rel="stylesheet" href="css/home.css?v=2170" />
-  <link rel="stylesheet" href="css/products.css?v=2170" />
-  <link rel="stylesheet" href="css/blog.css?v=2170" />
-  <link rel="stylesheet" href="css/footer.css?v=2170" />
+  <link rel="stylesheet" href="css/base.css?v=2172" />
+  <link rel="stylesheet" href="css/header.css?v=2172" />
+  <link rel="stylesheet" href="css/hero.css?v=2172" />
+  <link rel="stylesheet" href="css/home.css?v=2172" />
+  <link rel="stylesheet" href="css/products.css?v=2172" />
+  <link rel="stylesheet" href="css/blog.css?v=2172" />
+  <link rel="stylesheet" href="css/footer.css?v=2172" />
   <style>
     /* vertical slider – placed after Our Story section */
     /* .vs-scroll is taller than the slider (height set by the slider script) and the slider
@@ -184,7 +184,6 @@
       height: 100%;
       background: linear-gradient(90deg, #ffffff, rgba(255,255,255,0.5));
       width: 0%;
-      transition: width 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       box-shadow: 0 0 20px rgba(255,255,255,0.2);
     }
     
@@ -262,8 +261,7 @@
       flex-direction: column;
       height: 100%;
       width: 100%;
-      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);   /* = STEP_MS in the slider script */
-      will-change: transform;
+      will-change: transform;   /* no transition: the slider script moves it with the scroll */
     }
     
     /* Subtle vignette on images */
@@ -335,16 +333,7 @@
   <header class="site-header">
     <div class="header-utility">
       <div class="container header-utility__inner">
-        <div class="header-utility__left">
-          <a href="index.html#offices">Global Offices</a>
-          <a href="index.html#contact">Contact Us</a>
-        </div>
-        <div class="header-utility__right">
-          <a href="index.html#contact">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
-            Enquiry
-          </a>
-        </div>
+        <a href="index.html" class="header-mark" aria-label="MarkEn &mdash; Home"><img src="favicon.svg" alt="" width="24" height="24" /></a>
       </div>
     </div>
     <div class="header-main">
@@ -455,7 +444,7 @@
         <div class="container collage__grid">
           <div class="collage__images reveal">
             <img src="images/products/ult-deep-freezer-86.webp" alt="MarkEn ULT Deep Freezer" />
-            <img src="images/banners/who-pqs-banner.webp" alt="MarkEn WHO PQS accredited system" />
+            <img src="images/banners/blood-bank-range.webp" alt="MarkEn blood bank equipment range" />
             <img src="images/products/icu-7-function-bed.webp" alt="MarkEn ICU motorized bed" />
           </div>
           <div class="collage__copy reveal">
@@ -483,17 +472,32 @@
           {
             "eyebrow": "Our Story",
             "title": "25 Years of Precision Engineering",
-            "text": "From a single manufacturing unit in Nashik to a nationwide network, MarkEn has spent 25 years engineering cold chain, blood bank and critical care systems trusted by more than 20,000 healthcare institutions worldwide."
+            "text": "From a single manufacturing unit in Nashik to a nationwide network, MarkEn has spent 25 years engineering cold chain, blood bank and critical care systems trusted by more than 20,000 healthcare institutions worldwide.",
+            "images": [
+              ["images/products/ult-deep-freezer-86.webp", "MarkEn ULT Deep Freezer"],
+              ["images/banners/blood-bank-range.webp", "MarkEn blood bank equipment range"],
+              ["images/products/icu-7-function-bed.webp", "MarkEn ICU motorized bed"]
+            ]
           },
           {
             "eyebrow": "Our Reach",
             "title": "30+ Franchise Locations Nationwide",
-            "text": "With 500+ service centers across India, MarkEn ensures rapid support and maintenance for every system we manufacture — backed by our Nashik factory and Noida sales office."
+            "text": "With 500+ service centers across India, MarkEn ensures rapid support and maintenance for every system we manufacture — backed by our Nashik factory and Noida sales office.",
+            "images": [
+              ["images/about/mission-vision.webp", "MarkEn facility"],
+              ["images/banners/cold-storage.webp", "MarkEn cold storage solutions"],
+              ["images/about/private-healthcare.webp", "MarkEn equipment in private healthcare"]
+            ]
           },
           {
             "eyebrow": "Our Standards",
             "title": "The Only Indian Brand With 11+ WHO PQS Products",
-            "text": "MarkEn holds ISO 9001:2015, ISO 13485:2016, ISO 14001:2015 and WHO GMP certification — engineering trust into every device we build."
+            "text": "MarkEn holds ISO 9001:2015, ISO 13485:2016, ISO 14001:2015 and WHO GMP certification — engineering trust into every device we build.",
+            "images": [
+              ["images/products/ice-lined-refrigerator.webp", "MarkEn WHO PQS ice lined refrigerator"],
+              ["images/banners/flagship-products.webp", "MarkEn WHO PQS accredited flagship products"],
+              ["images/products/passive-cold-box.webp", "MarkEn WHO PQS passive cold box"]
+            ]
           }
         ]
       </script>
@@ -601,7 +605,7 @@
         </div>
       </section>
 
-      <!-- Our Clients — two logo rows loop continuously (pause on hover); the inline script at the end duplicates each list for a seamless loop -->
+      <!-- Our Clients — one logo row loops continuously (pause on hover); the inline script at the end duplicates the list for a seamless loop -->
       <section class="section clients" id="clients">
         <div class="container section-head">
           <span class="eyebrow reveal">Our Clients</span>
@@ -647,10 +651,6 @@
               <li class="clients__logo"><img src="images/clients/client-34.webp" alt="Maharashtra Shasan" title="Maharashtra Shasan" loading="lazy" decoding="async" /></li>
               <li class="clients__logo"><img src="images/clients/client-35.webp" alt="Government of Nagaland" title="Government of Nagaland" loading="lazy" decoding="async" /></li>
               <li class="clients__logo"><img src="images/clients/client-36.webp" alt="OSMCL Odisha" title="OSMCL Odisha" loading="lazy" decoding="async" /></li>
-            </ul>
-          </div>
-          <div class="clients__row clients__row--reverse">
-            <ul class="clients__track">
               <li class="clients__logo"><img src="images/clients/client-37.webp" alt="Government of Punjab" title="Government of Punjab" loading="lazy" decoding="async" /></li>
               <li class="clients__logo"><img src="images/clients/client-38.webp" alt="Seal of Punjab" title="Seal of Punjab" loading="lazy" decoding="async" /></li>
               <li class="clients__logo"><img src="images/clients/client-39.webp" alt="Department of Health" title="Department of Health" loading="lazy" decoding="async" /></li>
@@ -823,32 +823,39 @@
     </main>
 
     <footer class="site-footer">
-      <div class="site-footer__newsletter">
-        <div class="container site-footer__newsletter-inner">
-          <div>
-            <h3>Stay Updated</h3>
-            <p>Get the latest on new MarkEn systems, certifications and industry news.</p>
-          </div>
-          <form class="newsletter-form">
-            <input type="email" placeholder="Enter your email" required />
-            <button type="submit" aria-label="Subscribe">&rarr;</button>
-          </form>
+      <div class="container site-footer__cta">
+        <div class="site-footer__cta-copy">
+          <span class="site-footer__eyebrow">Let's Work Together</span>
+          <h3>Equip your facility with MarkEn</h3>
+          <p>Talk to our team about cold chain, blood bank, hospital furniture and medical equipment for your next project.</p>
         </div>
-      </div>
-
-      <div class="container">
-        <div class="site-footer__social">
-          <a href="https://www.linkedin.com/" target="_blank" rel="noreferrer" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg></a>
-          <a href="https://www.facebook.com/" target="_blank" rel="noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.32l-.53 3.5h-2.8V24C19.62 23.1 24 18.1 24 12.07z"/></svg></a>
-          <a href="https://www.youtube.com/" target="_blank" rel="noreferrer" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.5A3.02 3.02 0 0 0 .5 6.19C0 8.07 0 12 0 12s0 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14c1.88.5 9.38.5 9.38.5s7.5 0 9.38-.5a3.02 3.02 0 0 0 2.12-2.14C24 15.93 24 12 24 12s0-3.93-.5-5.81zM9.55 15.57V8.43L15.82 12l-6.27 3.57z"/></svg></a>
-          <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.3"/><circle cx="17.6" cy="6.4" r="1" fill="currentColor" stroke="none"/></svg></a>
+        <div class="site-footer__cta-actions">
+          <a class="btn site-footer__cta-btn" href="index.html#contact">Make an Enquiry <i>&rarr;</i></a>
+          <a class="site-footer__cta-phone" href="tel:+919130305959">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+            +91 91 3030 5959
+          </a>
         </div>
       </div>
 
       <div class="container site-footer__top">
-        <div class="site-footer__col site-footer__brand">
-          <img src="images/logo.svg" alt="MarkEn" style="height: 26px; filter: brightness(0) invert(1);" />
+        <div class="site-footer__brand">
+          <img class="site-footer__logo" src="images/logo.svg" alt="MarkEn" />
           <p>MarkEn leads with technology, precision and purpose — transforming lives through internationally trusted medical systems and service.</p>
+          <div class="site-footer__newsletter">
+            <h4>Stay Updated</h4>
+            <p>New systems, certifications and industry news — straight to your inbox.</p>
+            <form class="newsletter-form">
+              <input type="email" placeholder="Enter your email" aria-label="Email address" required />
+              <button type="submit" aria-label="Subscribe">&rarr;</button>
+            </form>
+          </div>
+          <div class="site-footer__social">
+            <a href="https://www.linkedin.com/" target="_blank" rel="noreferrer" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg></a>
+            <a href="https://www.facebook.com/" target="_blank" rel="noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.32l-.53 3.5h-2.8V24C19.62 23.1 24 18.1 24 12.07z"/></svg></a>
+            <a href="https://www.youtube.com/" target="_blank" rel="noreferrer" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.5A3.02 3.02 0 0 0 .5 6.19C0 8.07 0 12 0 12s0 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14c1.88.5 9.38.5 9.38.5s7.5 0 9.38-.5a3.02 3.02 0 0 0 2.12-2.14C24 15.93 24 12 24 12s0-3.93-.5-5.81zM9.55 15.57V8.43L15.82 12l-6.27 3.57z"/></svg></a>
+            <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.3"/><circle cx="17.6" cy="6.4" r="1" fill="currentColor" stroke="none"/></svg></a>
+          </div>
         </div>
         <div class="site-footer__col">
           <h4>Products</h4>
@@ -857,14 +864,7 @@
             <li><a href="products/blood-bank-equipment">Blood Bank Equipment</a></li>
             <li><a href="products/hospital-furniture">Hospital Furniture</a></li>
             <li><a href="products/medical-equipment">Medical Equipment</a></li>
-          </ul>
-        </div>
-        <div class="site-footer__col">
-          <h4>Other Links</h4>
-          <ul>
-            <li><a href="careers">Career</a></li>
-            <li><a href="events">Events</a></li>
-            <li><a href="service-center">Service Center</a></li>
+            <li><a href="products.html">All Products</a></li>
           </ul>
         </div>
         <div class="site-footer__col">
@@ -878,13 +878,33 @@
             <li><a href="index.html#contact">Contact Us</a></li>
           </ul>
         </div>
+        <div class="site-footer__col">
+          <h4>Other Links</h4>
+          <ul>
+            <li><a href="careers">Career</a></li>
+            <li><a href="events">Events</a></li>
+            <li><a href="service-center">Service Center</a></li>
+          </ul>
+        </div>
         <div class="site-footer__col" id="offices">
           <h4>Get in Touch</h4>
           <ul class="site-footer__contact">
-            <li><a href="tel:+919130305959">+91 91 3030 5959</a></li>
-            <li><a href="mailto:info@markenworld.com">info@markenworld.com</a></li>
-            <li>Global Sales Office: 05, A-44, VDS Tower, Sector 2, Noida, UP, India</li>
-            <li>Factory: 93/1 &amp; 2, MIDC, Satpur Colony, Nashik, Maharashtra, India</li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+              <a href="tel:+919130305959">+91 91 3030 5959</a>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m3 6 9 7 9-7"/></svg>
+              <a href="mailto:info@markenworld.com">info@markenworld.com</a>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5a7 7 0 0 1 14 0C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+              <span><strong>Global Sales Office</strong>05, A-44, VDS Tower, Sector 2, Noida, UP, India</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 21V10l6 4V10l6 4V5h6v16z"/><line x1="3" y1="21" x2="21" y2="21"/></svg>
+              <span><strong>Factory</strong>93/1 &amp; 2, MIDC, Satpur Colony, Nashik, Maharashtra, India</span>
+            </li>
           </ul>
         </div>
       </div>
@@ -895,12 +915,20 @@
           <a href="#privacy">Privacy Policy</a>
           <a href="#terms">Terms &amp; Conditions</a>
         </div>
+        <button type="button" class="site-footer__totop" aria-label="Back to top">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+        </button>
       </div>
-    </footer>
+</footer>
   </div>
 
   <script>
+    // Vertical slider, tied directly to the page scroll: while #vsScroll passes under
+    // the sticky slider, the track moves exactly with the scroll (no timers, no
+    // hijacking), so every slide passes in order and the page simply carries on
+    // scrolling after the last one — in both directions, with wheel, touch or keys.
     (function(){
+      const wrap = document.getElementById("vsScroll");
       const slider = document.getElementById("verticalSlider");
       const track = document.getElementById("vsTrack");
       const dotsBox = document.getElementById("vsDots");
@@ -908,97 +936,72 @@
       const topIndicator = document.getElementById("scrollTop");
       const bottomIndicator = document.getElementById("scrollBottom");
       const progressBar = document.getElementById("vsProgress");
-
-      if(!slider || !track) return;
+      if(!wrap || !slider || !track) return;
 
       const slides = track.querySelectorAll(".vs-slide");
       const total = slides.length;
-      const wrap = document.getElementById("vsScroll");
-      const STEP_MS = 600;      // = the track's CSS transition
-      const STEP_VH = 70;       // page scroll that advances one slide
-      let current = 0;
-      let target = 0;
-      let animating = false;
+      const STEP_VH = 80;       // page scroll per slide
+      let current = -1;
+      let ticking = false;
 
-      // Reserve the scroll distance the slides take (CSS adds it to the slider height).
+      // Reserve the scroll distance the slides take (CSS adds it to the wrapper height).
       wrap.style.setProperty("--vs-extra", `${(total - 1) * STEP_VH}vh`);
       const stepPx = () => window.innerHeight * STEP_VH / 100;
+      const stickyTop = () => parseFloat(getComputedStyle(slider).top) || 0;
 
-      // CREATE DOTS — a click scrolls the page to that slide's position
+      const dots = [];
       for(let i=0; i<total; i++){
-        let dot = document.createElement("span");
+        const dot = document.createElement("span");
         dot.className = "dot";
-        if(i===0) dot.classList.add("active");
-        dot.onclick = function(){
-          const wrapTop = wrap.getBoundingClientRect().top + window.scrollY - parseFloat(getComputedStyle(slider).top);
-          window.scrollTo({ top: wrapTop + i * stepPx() });
-        };
+        dot.addEventListener("click", () => {
+          const wrapTop = wrap.getBoundingClientRect().top + window.scrollY - stickyTop();
+          window.scrollTo({ top: wrapTop + i * stepPx(), behavior: "smooth" });
+        });
         dotsBox.appendChild(dot);
+        dots.push(dot);
       }
 
-      function updateUI(){
-        // Update dots
-        document.querySelectorAll("#vsDots .dot").forEach((dot,i)=>{
-          dot.classList.toggle("active", i===current);
-        });
-        
-        // Update counter
-        counter.innerHTML = String(current+1).padStart(2,"0") + " / " + String(total).padStart(2,"0");
-        
-        // Update scroll indicators
-        if(topIndicator){
-          topIndicator.classList.toggle("visible", current>0);
-        }
-        if(bottomIndicator){
-          bottomIndicator.classList.toggle("visible", current<total-1);
-        }
-        
-        // Update progress bar
-        if(progressBar){
-          const progress = ((current + 1) / total) * 100;
-          progressBar.style.width = progress + '%';
-        }
-        
-        // Update active class on slides for zoom effect
-        slides.forEach((slide, i) => {
-          slide.classList.toggle('active', i === current);
-        });
-      }
+      function update(){
+        ticking = false;
+        const scrolled = stickyTop() - wrap.getBoundingClientRect().top;
+        const pos = Math.max(0, Math.min(total - 1, scrolled / stepPx()));   // 0 … total-1, fractional
+        track.style.transform = `translateY(-${pos * 100}%)`;
+        if(progressBar) progressBar.style.width = ((pos + 1) / total * 100) + "%";
 
-      // Step one slide at a time towards the target, so even a fast scroll that jumps
-      // several slides plays each of them in order instead of skipping.
-      function stepTowardsTarget(){
-        if(animating || current === target) return;
-        current += Math.sign(target - current);
-        animating = true;
-        track.style.transform = `translateY(-${current * 100}%)`;
-        updateUI();
-        setTimeout(()=>{
-          animating = false;
-          stepTowardsTarget();
-        }, STEP_MS);
+        const i = Math.round(pos);
+        if(i === current) return;
+        current = i;
+        slides.forEach((slide, n) => slide.classList.toggle("active", n === i));
+        dots.forEach((dot, n) => dot.classList.toggle("active", n === i));
+        counter.textContent = String(i + 1).padStart(2, "0") + " / " + String(total).padStart(2, "0");
+        if(topIndicator) topIndicator.classList.toggle("visible", i > 0);
+        if(bottomIndicator) bottomIndicator.classList.toggle("visible", i < total - 1);
       }
-
-      // The scroll position inside .vs-scroll picks the slide. Native scrolling is never
-      // blocked (wheel, touch, keys, anchors all just scroll the page), so it can't get stuck.
+      // Once scrolling stops inside the slider range, settle on the nearest slide so
+      // it never rests showing half of two slides. Outside the range nothing moves.
+      let snapTimer;
+      function snap(){
+        const scrolled = stickyTop() - wrap.getBoundingClientRect().top;
+        const pos = scrolled / stepPx();
+        if(pos <= 0 || pos >= total - 1) return;
+        const target = Math.round(pos);
+        if(Math.abs(pos - target) < 0.01) return;
+        window.scrollBy({ top: (target - pos) * stepPx(), behavior: "smooth" });
+      }
       function onScroll(){
-        const scrolled = parseFloat(getComputedStyle(slider).top) - wrap.getBoundingClientRect().top;
-        target = Math.max(0, Math.min(total - 1, Math.round(scrolled / stepPx())));
-        stepTowardsTarget();
+        if(!ticking){ ticking = true; requestAnimationFrame(update); }
+        clearTimeout(snapTimer);
+        snapTimer = setTimeout(snap, 150);
       }
       window.addEventListener("scroll", onScroll, { passive: true });
-
-      // INITIAL
-      track.style.transform = "translateY(0)";
-      updateUI();
-      onScroll();   // page may load already scrolled (reload, back button)
-
+      window.addEventListener("resize", onScroll);
+      update();   // page may load already scrolled (reload, back button)
     })();
   </script>
   <script src="api/catalog.php"></script>
-  <script src="js/data.js?v=2170"></script>
-  <script src="js/blog-render.js?v=2170"></script>
-  <script src="js/main.js?v=2170"></script>
+  <script src="js/data.js?v=2172"></script>
+  <script src="js/blog-render.js?v=2172"></script>
+  <script src="js/main.js?v=2172"></script>
   <script>
     document.querySelectorAll(".cert-card").forEach((card) => {
       const desc = card.querySelector(".cert-card__desc");

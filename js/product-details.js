@@ -2,11 +2,6 @@
 // Reuses the same product/category data as product-detail.js; only the
 // presentation differs.
 
-const ICONS = {
-  badge:
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6.5"/><path d="M8.5 14.5 7 22l5-2.5 5 2.5-1.5-7.5"/></svg>',
-};
-
 function relatedMediaAlt(name) {
   return `${name} — MarkEn`;
 }
@@ -87,6 +82,16 @@ if (!product) {
     `Hi MarkEn, I'm interested in ${product.name}.`
   )}`;
 
+  // Sticky "Buy Now" pill — only for products sold online (admin "On Sale").
+  if (product.onSale) {
+    const prices = (product.variants || []).map((v) => v.price);
+    const from = prices.length ? Math.min(...prices) : product.price;
+    document.getElementById("pd-buy-price").textContent =
+      `From ₹${Number(from).toLocaleString("en-IN", { minimumFractionDigits: from % 1 ? 2 : 0, maximumFractionDigits: 2 })}`;
+    document.getElementById("pd-buy-link").href = `buy/${encodeURIComponent(product.slug)}`;
+    document.getElementById("pd-buy").hidden = false;
+  }
+
   // Media slider — the product's own photo, plus its category banner as a
   // second angle. Both are real assets already used elsewhere on the site.
   const slides = [{ src: product.image, alt: product.name }];
@@ -137,11 +142,53 @@ if (!product) {
     applicationsSection.remove();
   }
 
-  // Certifications (company-wide, shown on every product)
-  const certifications = ["WHO PQS", "ISO 9001:2015", "ISO 13485:2016", "ISO 14001:2015", "WHO GMP"];
-  document.getElementById("pd-certifications-grid").innerHTML = certifications
-    .map((c) => `<span class="pd-cert-badge">${ICONS.badge}${c}</span>`)
-    .join("");
+  // "Take a closer look" viewer — the product's own features as vertical tabs
+  // (company-wide points from markenworld.com when it has none). Each tab shows its
+  // own image (admin), else one of the product's photos, repeating when there are fewer.
+  const viewerTabs = (product.features && product.features.length ? product.features : [
+    { title: "Robust Construction", description: "Built with corrosion-resistant CRCA steel and stainless steel for dependable performance and a long service life." },
+    { title: "Certified Manufacturing", description: "Made under WHO GMP, ISO 9001, ISO 13485 and ISO 14001 certified processes — MarkEn is the only Indian brand tested for WHO PQS on 11+ products." },
+    { title: "Nationwide Service", description: "500+ service centres and 30+ franchises across India support installation, maintenance and after-sales care." },
+    { title: "25+ Years of Trust", description: "More than 25 years in business and 20,000+ happy customers across the healthcare industry." },
+  ]).slice(0, 6);
+  const viewerImages = [product.image, ...(product.gallery || [])];
+  const viewerTabsEl = document.getElementById("pd-viewer-tabs");
+  const viewerMediaEl = document.getElementById("pd-viewer-media");
+  viewerTabs.forEach((tab, i) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "pd-viewer__tab";
+    button.innerHTML =
+      '<span class="pd-viewer__head"><span class="pd-viewer__icon" aria-hidden="true">+</span><span class="pd-viewer__label"></span></span>' +
+      '<span class="pd-viewer__desc"><span></span></span>';
+    button.querySelector(".pd-viewer__label").textContent = tab.title;
+    button.querySelector(".pd-viewer__desc span").textContent = tab.description || "";
+    button.addEventListener("click", () => showViewerTab(i));
+    viewerTabsEl.appendChild(button);
+
+    const img = document.createElement("img");
+    img.src = tab.image || viewerImages[i % viewerImages.length];
+    img.alt = `${product.name} — ${tab.title}`;
+    viewerMediaEl.appendChild(img);
+  });
+  function showViewerTab(index) {
+    viewerTabsEl.querySelectorAll(".pd-viewer__tab").forEach((el, i) => {
+      el.classList.toggle("is-active", i === index);
+      el.setAttribute("aria-expanded", i === index);
+    });
+    viewerMediaEl.querySelectorAll("img").forEach((el, i) => el.classList.toggle("is-active", i === index));
+  }
+  showViewerTab(0);
+
+  // Certification cards (static markup, same accordion as the homepage)
+  document.querySelectorAll(".cert-card").forEach((card) => {
+    const desc = card.querySelector(".cert-card__desc");
+    card.addEventListener("click", () => {
+      const isOpen = card.classList.toggle("is-open");
+      card.setAttribute("aria-expanded", isOpen);
+      desc.style.maxHeight = isOpen ? `${desc.scrollHeight}px` : "";
+    });
+  });
 
   // Documentation — "Request by Email" turns into an email field; the server
   // emails the document (attached when uploaded in the admin) and logs the lead.

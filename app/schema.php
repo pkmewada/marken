@@ -264,6 +264,48 @@ function migrateSchema(PDO $pdo, bool $freshInstall = false): void {
         KEY `idxStatusStart` (`status`, `startDate`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+    // v8: products sold online (Buy Now → /buy/{slug} → /checkout) and their guest orders.
+    // variants = [{name, description, price}], colors = [{name, hex, image?}], inTheBox = [string].
+    addColumnIfMissing($pdo, 'products', 'onSale', "TINYINT(1) NOT NULL DEFAULT 0 AFTER `featured`");
+    addColumnIfMissing($pdo, 'products', 'price', "DECIMAL(12,2) DEFAULT NULL AFTER `onSale`");
+    addColumnIfMissing($pdo, 'products', 'variants', "JSON DEFAULT NULL AFTER `price`");
+    addColumnIfMissing($pdo, 'products', 'colors', "JSON DEFAULT NULL AFTER `variants`");
+    addColumnIfMissing($pdo, 'products', 'deliveryInfo', "VARCHAR(300) DEFAULT NULL AFTER `colors`");
+    addColumnIfMissing($pdo, 'products', 'inTheBox', "JSON DEFAULT NULL AFTER `deliveryInfo`");
+
+    // Prices are snapshots computed on the server at order time; productId SET NULL keeps orders of deleted products.
+    $pdo->exec("CREATE TABLE IF NOT EXISTS `orders` (
+        `id`          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        `orderNumber` VARCHAR(20)  NOT NULL,
+        `productId`   INT UNSIGNED DEFAULT NULL,
+        `productName` VARCHAR(200) NOT NULL,
+        `variant`     VARCHAR(200) DEFAULT NULL,
+        `color`       VARCHAR(100) DEFAULT NULL,
+        `quantity`    SMALLINT UNSIGNED NOT NULL,
+        `unitPrice`   DECIMAL(12,2) NOT NULL,
+        `total`       DECIMAL(12,2) NOT NULL,
+        `fullName`    VARCHAR(150) NOT NULL,
+        `email`       VARCHAR(200) NOT NULL,
+        `phone`       VARCHAR(30)  NOT NULL,
+        `company`     VARCHAR(200) DEFAULT NULL,
+        `gstin`       VARCHAR(15)  DEFAULT NULL,
+        `address1`    VARCHAR(300) NOT NULL,
+        `address2`    VARCHAR(300) DEFAULT NULL,
+        `city`        VARCHAR(100) NOT NULL,
+        `state`       VARCHAR(100) NOT NULL,
+        `pincode`     CHAR(6)      NOT NULL,
+        `status`      ENUM('pending-payment','paid','shipped','delivered','cancelled') NOT NULL DEFAULT 'pending-payment',
+        `ip`          VARCHAR(45) DEFAULT NULL,
+        `createdAt`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updatedAt`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `uqOrderNumber` (`orderNumber`),
+        KEY `idxStatus` (`status`),
+        KEY `idxIpCreated` (`ip`, `createdAt`),
+        CONSTRAINT `fkOrdersProduct` FOREIGN KEY (`productId`) REFERENCES `products` (`id`)
+            ON DELETE SET NULL ON UPDATE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
     @file_put_contents(SCHEMA_VERSION_FILE, (string)SCHEMA_VERSION);
 }
 
